@@ -249,7 +249,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
     </property>
     <addaction name="actionOpen"/>
     <addaction name="actionSave"/>
-    <addaction name="action"/>
+    <addaction name="actionSaveAs"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
@@ -264,7 +264,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
     <string>Зберегти</string>
    </property>
   </action>
-  <action name="action">
+  <action name="actionSaveAs">
    <property name="text">
     <string>Зберегти як</string>
    </property>
