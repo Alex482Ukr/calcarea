@@ -55,7 +55,7 @@ class MainWindow(QMainWindow):
     def update_values(self):
         self.ui.tableWidget.itemChanged.disconnect(self.update_values)
         try:
-            self.empty_cells()
+            self.verify_input()
 
             self.calculate_area()
             self.calculate_volume()
@@ -67,15 +67,6 @@ class MainWindow(QMainWindow):
         except Exception as e:
             self.ui.tableWidget.itemChanged.connect(self.update_values)
             raise e
-
-    def empty_cells(self):
-        for row in range(self.ui.tableWidget.rowCount()):
-            if not self.ui.tableWidget.item(row, 0).text() or ',' in self.ui.tableWidget.item(row, 0).text():
-                self.ui.tableWidget.item(row, 0).setText('A')
-            
-            for col in range(1, 6):
-                if not self.ui.tableWidget.item(row, col).text() or ',' in self.ui.tableWidget.item(row, col).text():
-                    self.ui.tableWidget.item(row, col).setText('0.00')
 
     def calculate_area(self):
         for row in range(self.ui.tableWidget.rowCount()):
@@ -175,6 +166,21 @@ class MainWindow(QMainWindow):
     def clear_table(self):
         for _ in range(self.ui.tableWidget.rowCount()):
             self.ui.tableWidget.removeRow(0)
+
+    def verify_input(self):
+        for row in range(self.ui.tableWidget.rowCount()):
+            letter = self.ui.tableWidget.item(row, 0).text()
+            if not letter or ',' in letter:
+                self.ui.tableWidget.item(row, 0).setText('A')
+            elif 'ё' in letter:
+                self.ui.tableWidget.item(row, 0).setText(letter.replace('ё', "'"))
+
+            for col in range(1, 4):
+                value = self.ui.tableWidget.item(row, col).text()
+                if not value:
+                    self.ui.tableWidget.item(row, col).setText('0.00')
+                if ',' in value:
+                    self.ui.tableWidget.item(row, col).setText(value.replace(',', '.'))
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
