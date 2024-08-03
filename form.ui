@@ -256,12 +256,12 @@ li.checked::marker { content: &quot;\2612&quot;; }
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionOpen">
    <property name="text">
-    <string>Open</string>
+    <string>Відкрити</string>
    </property>
   </action>
   <action name="actionSave">
    <property name="text">
-    <string>Save</string>
+    <string>Зберегти</string>
    </property>
   </action>
   <action name="action">
