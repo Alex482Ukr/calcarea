@@ -2,10 +2,9 @@
 import sys
 from decimal import Decimal as Dec
 from tkinter import filedialog
-from os.path import isfile
 
 from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
-
+from PySide6.QtGui import QIcon
 from PySide6.QtCore import Qt
 
 # Important:
@@ -19,6 +18,12 @@ class MainWindow(QMainWindow):
         super().__init__(parent)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        self.setWindowTitle('Calculator')
+
+        my_icon = QIcon()
+        my_icon.addFile('icons/icon.png')
+
+        self.setWindowIcon(my_icon)
 
         self.ui.pushButton.clicked.connect(self.new_row)
         self.ui.tableWidget.itemChanged.connect(self.update_values)
