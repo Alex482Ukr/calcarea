@@ -258,10 +258,16 @@ li.checked::marker { content: &quot;\2612&quot;; }
    <property name="text">
     <string>Відкрити</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
   </action>
   <action name="actionSave">
    <property name="text">
     <string>Зберегти</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
    </property>
   </action>
   <action name="actionSaveAs">
