@@ -2,6 +2,8 @@
 import sys
 from decimal import Decimal as Dec
 
+from tkinter import filedialog
+
 from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
 
 from PySide6.QtCore import Qt
@@ -20,6 +22,8 @@ class MainWindow(QMainWindow):
 
         self.ui.pushButton.clicked.connect(self.new_row)
         self.ui.tableWidget.itemChanged.connect(self.update_values)
+
+        self.currentfile = ''
 
     def new_row(self):
         self.ui.tableWidget.itemChanged.disconnect(self.update_values)
@@ -62,6 +66,8 @@ class MainWindow(QMainWindow):
 
             self.ui.tableWidget.item(row, 4).setText(res)
 
+            self.ui.actionOpen.triggered.connect(self.openfile)
+
 
     def sum_area(self):
         summ = Dec('0')
@@ -99,6 +105,10 @@ class MainWindow(QMainWindow):
         value = round(value, rounding)
         value = str(value)
         return value
+    
+    def openfile(self):
+        self.currentfile = filedialog.askopenfilename()
+        print(self.currentfile)
 
 
 if __name__ == "__main__":
