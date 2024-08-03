@@ -1,8 +1,8 @@
 # This Python file uses the following encoding: utf-8
 import sys
 from decimal import Decimal as Dec
-
 from tkinter import filedialog
+from os.path import isfile
 
 from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
 
@@ -23,7 +23,11 @@ class MainWindow(QMainWindow):
         self.ui.pushButton.clicked.connect(self.new_row)
         self.ui.tableWidget.itemChanged.connect(self.update_values)
 
-        self.currentfile = ''
+        self.currentfile = None
+
+        self.ui.actionOpen.triggered.connect(self.openfile)
+        self.ui.actionSave.triggered.connect(self.savefile)
+        self.ui.actionSaveAs.triggered.connect(self.saveasfile)
 
     def new_row(self):
         self.ui.tableWidget.itemChanged.disconnect(self.update_values)
@@ -35,7 +39,7 @@ class MainWindow(QMainWindow):
             self.ui.tableWidget.setItem(row, col, QTableWidgetItem())
             self.ui.tableWidget.item(row, col).setText('0.00')
 
-        self.ui.tableWidget.item(row, 0).setText('')
+        self.ui.tableWidget.item(row, 0).setText('A')
 
         area, volume = self.ui.tableWidget.item(row, 4), self.ui.tableWidget.item(row, 5)
         area.setFlags(area.flags() & ~Qt.ItemIsEditable)
@@ -45,14 +49,28 @@ class MainWindow(QMainWindow):
 
     def update_values(self):
         self.ui.tableWidget.itemChanged.disconnect(self.update_values)
+        try:
+            self.empty_cells()
 
-        self.calculate_area()
-        self.calculate_volume()
+            self.calculate_area()
+            self.calculate_volume()
 
-        self.sum_area()
-        self.sum_volume()
+            self.sum_area()
+            self.sum_volume()
 
-        self.ui.tableWidget.itemChanged.connect(self.update_values)
+            self.ui.tableWidget.itemChanged.connect(self.update_values)
+        except Exception as e:
+            self.ui.tableWidget.itemChanged.connect(self.update_values)
+            raise e
+
+    def empty_cells(self):
+        for row in range(self.ui.tableWidget.rowCount()):
+            if not self.ui.tableWidget.item(row, 0).text() or ',' in self.ui.tableWidget.item(row, 0).text():
+                self.ui.tableWidget.item(row, 0).setText('A')
+            
+            for col in range(1, 6):
+                if not self.ui.tableWidget.item(row, col).text() or ',' in self.ui.tableWidget.item(row, col).text():
+                    self.ui.tableWidget.item(row, col).setText('0.00')
 
     def calculate_area(self):
         for row in range(self.ui.tableWidget.rowCount()):
@@ -65,8 +83,6 @@ class MainWindow(QMainWindow):
             res = self.out_format(res, rounding=1)
 
             self.ui.tableWidget.item(row, 4).setText(res)
-
-            self.ui.actionOpen.triggered.connect(self.openfile)
 
 
     def sum_area(self):
@@ -107,9 +123,53 @@ class MainWindow(QMainWindow):
         return value
     
     def openfile(self):
-        self.currentfile = filedialog.askopenfilename()
-        print(self.currentfile)
+        with filedialog.askopenfile(
+            defaultextension='.tsv', 
+            filetypes=[('Tab Separated Values', '.csv'), ('All types', '.*')], 
+            title='Відкрити', 
+            initialfile='save.csv') as f:
 
+            if f:
+                self.currentfile = f.name
+
+                table = [[value for value in row.split(',')] for row in f.read().split('\n')]
+
+                self.clear_table()
+                for _ in range(len(table)):
+                    self.new_row()
+
+                for row in range(self.ui.tableWidget.rowCount()):
+                    for col in range(4):
+                        self.ui.tableWidget.item(row, col).setText(table[row][col])
+
+    def savefile(self):
+        rows = [[self.ui.tableWidget.item(row, col).text() for col in range(4)] for row in range(self.ui.tableWidget.rowCount())]
+        rows = '\n'.join([','.join(row) for row in rows])
+        
+        if self.currentfile:
+            with open(self.currentfile, 'wt') as f:
+                f.write(rows)
+        else:
+            self.saveasfile()
+
+    def saveasfile(self):
+        with filedialog.asksaveasfile(
+            defaultextension='.csv', 
+            filetypes=[('Tab Separated Values', '.csv'), ('All types', '.*')], 
+            title='Зберегти як', 
+            initialfile='save.csv') as f:
+
+            if f:
+                self.currentfile = f.name
+
+                rows = [[self.ui.tableWidget.item(row, col).text() for col in range(4)] for row in range(self.ui.tableWidget.rowCount())]
+                rows = '\n'.join([','.join(row) for row in rows])
+
+                f.write(rows)
+
+    def clear_table(self):
+        for _ in range(self.ui.tableWidget.rowCount()):
+            self.ui.tableWidget.removeRow(0)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
