@@ -121,7 +121,7 @@ class MainWindow(QMainWindow):
     def openfile(self):
         with filedialog.askopenfile(
             defaultextension='.tsv', 
-            filetypes=[('Tab Separated Values', '.csv'), ('All types', '.*')], 
+            filetypes=[('Comma Separated Values', '.csv'), ('All types', '.*')], 
             title='Відкрити', 
             initialfile='save.csv') as f:
 
@@ -151,7 +151,7 @@ class MainWindow(QMainWindow):
     def saveasfile(self):
         with filedialog.asksaveasfile(
             defaultextension='.csv', 
-            filetypes=[('Tab Separated Values', '.csv'), ('All types', '.*')], 
+            filetypes=[('Comma Separated Values', '.csv'), ('All types', '.*')], 
             title='Зберегти як', 
             initialfile='save.csv') as f:
 
