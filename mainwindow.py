@@ -3,7 +3,7 @@ import sys
 from decimal import Decimal as Dec
 from tkinter import filedialog
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QDialog, QDialogButtonBox, QVBoxLayout, QLabel
+from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QDialog, QDialogButtonBox, QVBoxLayout, QLabel, QMessageBox
 from PySide6.QtGui import QIcon
 from PySide6.QtCore import Qt
 
@@ -62,11 +62,8 @@ class MainWindow(QMainWindow):
 
             self.sum_area()
             self.sum_volume()
-
+        finally:
             self.ui.tableWidget.itemChanged.connect(self.update_values)
-        except Exception as e:
-            self.ui.tableWidget.itemChanged.connect(self.update_values)
-            raise e
 
     def calculate_area(self):
         for row in range(self.ui.tableWidget.rowCount()):
