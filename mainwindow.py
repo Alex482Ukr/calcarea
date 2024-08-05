@@ -33,6 +33,7 @@ class MainWindow(QMainWindow):
         self.ui.actionOpen.triggered.connect(self.openfile)
         self.ui.actionSave.triggered.connect(self.savefile)
         self.ui.actionSaveAs.triggered.connect(self.saveasfile)
+        self.ui.actionLoadAutosave.triggered.connect(self.load_autosave())
 
     def new_row(self):
         self.ui.tableWidget.itemChanged.disconnect(self.update_values)
