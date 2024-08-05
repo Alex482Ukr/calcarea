@@ -70,14 +70,21 @@ class MainWindow(QMainWindow):
 
     def calculate_area(self):
         for row in range(self.ui.tableWidget.rowCount()):
-            width, length = self.ui.tableWidget.item(row, 1), self.ui.tableWidget.item(row, 2)
-            width, length = width.text(), length.text()
-            width, length = width.replace(',', '.'), length.replace(',', '.')
-            width, length = Dec(width), Dec(length)
+            letter, width, length, area = self.getitems(row, 0, 1, 2, 4)
 
-            res = width * length
-            res = self.out_format(res, rounding=1)
-
+            if '!' in letter.text():
+                res = area.text()
+                res.replace(',', '.')
+                res = Dec(res)
+                res = self.out_format(res, rounding=1)
+                width.setText(res)
+                length.setText('1')
+            else:
+                width, length = width.text(), length.text()
+                width, length = width.replace(',', '.'), length.replace(',', '.')
+                width, length = Dec(width), Dec(length)
+                res = width * length
+                res = self.out_format(res, rounding=1)
             self.ui.tableWidget.item(row, 4).setText(res)
 
 
@@ -114,6 +121,10 @@ class MainWindow(QMainWindow):
         self.ui.volume_total.setText(str(summ))
 
     def out_format(self, value, rounding=0):
+        value = str(value)
+        if '.' in value and len(value.split('.')[1]) > rounding and value.rstrip('0').endswith('5'):
+            value = value + '1'
+        value = Dec(value)
         value = round(value, rounding)
         value = str(value)
         return value
@@ -135,11 +146,11 @@ class MainWindow(QMainWindow):
                     self.new_row()
 
                 for row in range(self.ui.tableWidget.rowCount()):
-                    for col in range(4):
+                    for col in range(6):
                         self.ui.tableWidget.item(row, col).setText(table[row][col])
 
     def savefile(self):
-        rows = [[self.ui.tableWidget.item(row, col).text() for col in range(4)] for row in range(self.ui.tableWidget.rowCount())]
+        rows = [[self.ui.tableWidget.item(row, col).text() for col in range(6)] for row in range(self.ui.tableWidget.rowCount())]
         rows = '\n'.join([','.join(row) for row in rows])
         
         if self.currentfile:
@@ -158,7 +169,7 @@ class MainWindow(QMainWindow):
             if f:
                 self.currentfile = f.name
 
-                rows = [[self.ui.tableWidget.item(row, col).text() for col in range(4)] for row in range(self.ui.tableWidget.rowCount())]
+                rows = [[self.ui.tableWidget.item(row, col).text() for col in range(6)] for row in range(self.ui.tableWidget.rowCount())]
                 rows = '\n'.join([','.join(row) for row in rows])
 
                 f.write(rows)
@@ -174,13 +185,35 @@ class MainWindow(QMainWindow):
                 self.ui.tableWidget.item(row, 0).setText('A')
             elif 'ё' in letter:
                 self.ui.tableWidget.item(row, 0).setText(letter.replace('ё', "'"))
+            elif '!' in letter:
+                self.composite_area(row)
+            else:
+                self.not_composite_area(row)
 
-            for col in range(1, 4):
+            for col in range(1, 6):
                 value = self.ui.tableWidget.item(row, col).text()
                 if not value:
-                    self.ui.tableWidget.item(row, col).setText('0.00')
-                if ',' in value:
-                    self.ui.tableWidget.item(row, col).setText(value.replace(',', '.'))
+                    value = '0.00'
+
+                value = value.replace(',', '.')
+                value = self.out_format(value, rounding=2)
+                self.ui.tableWidget.item(row, col).setText(value)
+
+    
+    def getitems(self, row, *indxs):
+        return tuple(self.ui.tableWidget.item(row, i) for i in indxs)
+    
+    def composite_area(self, row):
+        width, length, area = self.getitems(row, 1, 2, 4)
+        width.setFlags(width.flags() & ~Qt.ItemIsEditable)
+        length.setFlags(length.flags() & ~Qt.ItemIsEditable)
+        area.setFlags(area.flags() | Qt.ItemIsEditable)
+
+    def not_composite_area(self, row):
+        width, length, area = self.getitems(row, 1, 2, 4)
+        width.setFlags(width.flags() | Qt.ItemIsEditable)
+        length.setFlags(length.flags() | Qt.ItemIsEditable)
+        area.setFlags(area.flags() & ~Qt.ItemIsEditable)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
