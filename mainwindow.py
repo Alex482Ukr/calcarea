@@ -63,6 +63,8 @@ class MainWindow(QMainWindow):
             self.sum_area()
             self.sum_volume()
 
+            self.autosave()
+
             self.ui.tableWidget.itemChanged.connect(self.update_values)
         except Exception as e:
             self.ui.tableWidget.itemChanged.connect(self.update_values)
@@ -214,6 +216,24 @@ class MainWindow(QMainWindow):
         width.setFlags(width.flags() | Qt.ItemIsEditable)
         length.setFlags(length.flags() | Qt.ItemIsEditable)
         area.setFlags(area.flags() & ~Qt.ItemIsEditable)
+    
+    def autosave(self):
+        currentfile = self.currentfile
+        self.currentfile = 'autosave.csv'
+        self.savefile()
+        self.currentfile = currentfile
+    
+    def load_autosave(self):
+        with open('autosave.csv', 'rt') as f:
+            table = [[value for value in row.split(',')] for row in f.read().split('\n')]
+
+            self.clear_table()
+            for _ in range(len(table)):
+                self.new_row()
+
+            for row in range(self.ui.tableWidget.rowCount()):
+                for col in range(6):
+                    self.ui.tableWidget.item(row, col).setText(table[row][col])
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
