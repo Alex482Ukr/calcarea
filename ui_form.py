@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'form.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.7.2
+## Created by: Qt User Interface Compiler version 6.6.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -32,6 +32,8 @@ class Ui_MainWindow(object):
         self.actionSave.setObjectName(u"actionSave")
         self.actionSaveAs = QAction(MainWindow)
         self.actionSaveAs.setObjectName(u"actionSaveAs")
+        self.actionLoadAutosave = QAction(MainWindow)
+        self.actionLoadAutosave.setObjectName(u"actionLoadAutosave")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.tableWidget = QTableWidget(self.centralwidget)
@@ -106,6 +108,7 @@ class Ui_MainWindow(object):
         self.menuFile.addAction(self.actionOpen)
         self.menuFile.addAction(self.actionSave)
         self.menuFile.addAction(self.actionSaveAs)
+        self.menuFile.addAction(self.actionLoadAutosave)
 
         self.retranslateUi(MainWindow)
 
@@ -123,6 +126,7 @@ class Ui_MainWindow(object):
         self.actionSave.setShortcut(QCoreApplication.translate("MainWindow", u"Ctrl+S", None))
 #endif // QT_CONFIG(shortcut)
         self.actionSaveAs.setText(QCoreApplication.translate("MainWindow", u"\u0417\u0431\u0435\u0440\u0435\u0433\u0442\u0438 \u044f\u043a", None))
+        self.actionLoadAutosave.setText(QCoreApplication.translate("MainWindow", u"\u0410\u0432\u0442\u043e\u0437\u0431\u0435\u0440\u0435\u0436\u0435\u043d\u043d\u044f", None))
         ___qtablewidgetitem = self.tableWidget.horizontalHeaderItem(0)
         ___qtablewidgetitem.setText(QCoreApplication.translate("MainWindow", u"\u0411\u0443\u043a\u0432\u0430", None));
         ___qtablewidgetitem1 = self.tableWidget.horizontalHeaderItem(1)

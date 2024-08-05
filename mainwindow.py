@@ -3,7 +3,7 @@ import sys
 from decimal import Decimal as Dec
 from tkinter import filedialog
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
+from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QDialog, QDialogButtonBox, QVBoxLayout, QLabel
 from PySide6.QtGui import QIcon
 from PySide6.QtCore import Qt
 
@@ -33,7 +33,6 @@ class MainWindow(QMainWindow):
         self.ui.actionOpen.triggered.connect(self.openfile)
         self.ui.actionSave.triggered.connect(self.savefile)
         self.ui.actionSaveAs.triggered.connect(self.saveasfile)
-        self.ui.actionLoadAutosave.triggered.connect(self.load_autosave())
 
     def new_row(self):
         self.ui.tableWidget.itemChanged.disconnect(self.update_values)
@@ -63,8 +62,6 @@ class MainWindow(QMainWindow):
 
             self.sum_area()
             self.sum_volume()
-
-            self.autosave()
 
             self.ui.tableWidget.itemChanged.connect(self.update_values)
         except Exception as e:
@@ -218,26 +215,38 @@ class MainWindow(QMainWindow):
         length.setFlags(length.flags() | Qt.ItemIsEditable)
         area.setFlags(area.flags() & ~Qt.ItemIsEditable)
     
-    def autosave(self):
-        currentfile = self.currentfile
-        self.currentfile = 'autosave.csv'
-        self.savefile()
-        self.currentfile = currentfile
-    
-    def load_autosave(self):
-        with open('autosave.csv', 'rt') as f:
-            table = [[value for value in row.split(',')] for row in f.read().split('\n')]
+    def closeEvent(self, event):
+        if self.currentfile:
+            dlg = SaveDialog(self)
+            dlg.exec() 
 
-            self.clear_table()
-            for _ in range(len(table)):
-                self.new_row()
 
-            for row in range(self.ui.tableWidget.rowCount()):
-                for col in range(6):
-                    self.ui.tableWidget.item(row, col).setText(table[row][col])
+class SaveDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.parent = parent
+
+        self.setWindowTitle("Saving")
+
+        QBtn = QDialogButtonBox.Save | QDialogButtonBox.No
+
+        self.buttonBox = QDialogButtonBox(QBtn)
+        self.buttonBox.rejected.connect(self.close)
+        self.buttonBox.accepted.connect(self.save)
+
+        self.layout = QVBoxLayout()
+        message = QLabel("Зберегти зміни?")
+        self.layout.addWidget(message)
+        self.layout.addWidget(self.buttonBox)
+        self.setLayout(self.layout)
+
+    def save(self):
+        self.parent.savefile()
+        self.close()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     widget = MainWindow()
     widget.show()
-    sys.exit(app.exec())
+    exit_code = app.exec()
+    sys.exit(exit_code)
