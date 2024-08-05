@@ -3,7 +3,7 @@ import sys
 from decimal import Decimal as Dec
 from tkinter import filedialog
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QDialog, QDialogButtonBox, QVBoxLayout, QLabel, QMessageBox
+from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QDialog, QDialogButtonBox, QVBoxLayout, QLabel
 from PySide6.QtGui import QIcon
 from PySide6.QtCore import Qt
 
