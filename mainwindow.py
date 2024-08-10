@@ -240,17 +240,22 @@ class MainWindow(QMainWindow):
         length.setFlags(length.flags() | Qt.ItemIsEditable)
         area.setFlags(area.flags() & ~Qt.ItemIsEditable)
     
-    def closeEvent(self, event):
+    def close(self):
         if self.currentfile:
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Збереження")
             dlg.setText("Зберегти зміни?")
-            dlg.setStandardButtons(QMessageBox.Save | QMessageBox.No)
+            dlg.setStandardButtons(QMessageBox.Save | QMessageBox.No | QMessageBox.Cancel)
             dlg.setIcon(QMessageBox.Question)
             button = dlg.exec()
 
             if button == QMessageBox.Save:
                 self.savefile()
+            if button == QMessageBox.No:
+                super().close()
+    
+    def closeEvent(self, event):
+        self.close()
 
 def excepthook(cls, exception, tb):
     exc_type = cls.__name__
