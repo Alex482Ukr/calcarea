@@ -3,9 +3,9 @@ import sys
 from decimal import Decimal as Dec
 from tkinter import filedialog
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QDialog, QDialogButtonBox, QVBoxLayout, QLabel, QMessageBox
-from PySide6.QtGui import QIcon
-from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QDialog, QDialogButtonBox, QVBoxLayout, QLabel
+from PySide6.QtGui import QIcon, QColor
+from PySide6.QtCore import Qt, QModelIndex
 
 # Important:
 # You need to run the following command to generate the ui_form.py file
@@ -26,13 +26,36 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(my_icon)
 
         self.ui.pushButton.clicked.connect(self.new_row)
-        self.ui.tableWidget.itemChanged.connect(self.update_values)
-
-        self.currentfile = None
 
         self.ui.actionOpen.triggered.connect(self.openfile)
         self.ui.actionSave.triggered.connect(self.savefile)
         self.ui.actionSaveAs.triggered.connect(self.saveasfile)
+
+        self.ui.tableWidget.itemChanged.connect(self.update_values)
+        self.ui.tableWidget.itemSelectionChanged.connect(self.unhighlight_all)
+        self.ui.tableWidget.itemSelectionChanged.connect(self.highlight_row)
+
+        self.currentfile = None
+
+    @property
+    def rows(self):
+        return self.ui.tableWidget.rowCount()
+    @property
+    def cols(self):
+        return self.ui.tableWidget.columnCount()
+
+    def highlight_row(self):
+
+        rows = map(QModelIndex.row, self.ui.tableWidget.selectedIndexes())
+        for row in rows:
+            for col in range(self.cols):
+                item = self.ui.tableWidget.item(row, col)
+                item.setBackground(QColor(255, 255, 204))
+
+    def unhighlight_all(self):
+        for row in range(self.rows):
+            for col in range(self.cols):
+                self.ui.tableWidget.item(row, col).setBackground(QColor(255, 255, 255))
 
     def new_row(self):
         self.ui.tableWidget.itemChanged.disconnect(self.update_values)
@@ -40,7 +63,7 @@ class MainWindow(QMainWindow):
         row = self.ui.tableWidget.rowCount()
         self.ui.tableWidget.insertRow(row)
 
-        for col in range(6):
+        for col in range(self.cols):
             self.ui.tableWidget.setItem(row, col, QTableWidgetItem())
             self.ui.tableWidget.item(row, col).setText('0.00')
 
@@ -66,7 +89,7 @@ class MainWindow(QMainWindow):
             self.ui.tableWidget.itemChanged.connect(self.update_values)
 
     def calculate_area(self):
-        for row in range(self.ui.tableWidget.rowCount()):
+        for row in range(self.rows):
             letter, width, length, area = self.getitems(row, 0, 1, 2, 4)
 
             if '!' in letter.text():
@@ -89,7 +112,7 @@ class MainWindow(QMainWindow):
         summ = Dec('0')
         sum_a = Dec('0')
 
-        for row in range(self.ui.tableWidget.rowCount()):
+        for row in range(self.rows):
             summ += Dec(self.ui.tableWidget.item(row, 4).text())
             letter = self.ui.tableWidget.item(row, 0).text()
             if letter and letter[0] in ('A', 'a', 'А', 'а'):
@@ -100,7 +123,7 @@ class MainWindow(QMainWindow):
         self.ui.area_total.setText(str(summ))
 
     def calculate_volume(self):
-        for row in range(self.ui.tableWidget.rowCount()):
+        for row in range(self.rows):
             area, height = self.ui.tableWidget.item(row, 4), self.ui.tableWidget.item(row, 3)
             area, height = area.text(), height.text()
             area, height = area.replace(',', '.'), height.replace(',', '.')
@@ -113,7 +136,7 @@ class MainWindow(QMainWindow):
 
     def sum_volume(self):
         summ = Dec('0')
-        for row in range(self.ui.tableWidget.rowCount()):
+        for row in range(self.rows):
             summ += Dec(self.ui.tableWidget.item(row, 5).text())
         self.ui.volume_total.setText(str(summ))
 
@@ -147,7 +170,7 @@ class MainWindow(QMainWindow):
                         self.ui.tableWidget.item(row, col).setText(table[row][col])
 
     def savefile(self):
-        rows = [[self.ui.tableWidget.item(row, col).text() for col in range(6)] for row in range(self.ui.tableWidget.rowCount())]
+        rows = [[self.ui.tableWidget.item(row, col).text() for col in range(self.cols)] for row in range(self.rows)]
         rows = '\n'.join([','.join(row) for row in rows])
         
         if self.currentfile:
@@ -166,7 +189,7 @@ class MainWindow(QMainWindow):
             if f:
                 self.currentfile = f.name
 
-                rows = [[self.ui.tableWidget.item(row, col).text() for col in range(6)] for row in range(self.ui.tableWidget.rowCount())]
+                rows = [[self.ui.tableWidget.item(row, col).text() for col in range(self.cols)] for row in range(self.rows)]
                 rows = '\n'.join([','.join(row) for row in rows])
 
                 f.write(rows)
