@@ -2,8 +2,10 @@
 import sys
 from decimal import Decimal as Dec
 from tkinter import filedialog
+import traceback
+from pyperclip import copy
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QDialog, QDialogButtonBox, QVBoxLayout, QLabel
+from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QDialog, QDialogButtonBox, QVBoxLayout, QLabel, QMessageBox
 from PySide6.QtGui import QIcon, QColor
 from PySide6.QtCore import Qt, QModelIndex
 
@@ -180,19 +182,22 @@ class MainWindow(QMainWindow):
             self.saveasfile()
 
     def saveasfile(self):
-        with filedialog.asksaveasfile(
-            defaultextension='.csv', 
-            filetypes=[('Comma Separated Values', '.csv'), ('All types', '.*')], 
-            title='Зберегти як', 
-            initialfile='save.csv') as f:
+        try:
+            with filedialog.asksaveasfile(
+                defaultextension='.csv', 
+                filetypes=[('Comma Separated Values', '.csv'), ('All types', '.*')], 
+                title='Зберегти як', 
+                initialfile='save.csv') as f:
 
-            if f:
-                self.currentfile = f.name
+                if f:
+                    self.currentfile = f.name
 
-                rows = [[self.ui.tableWidget.item(row, col).text() for col in range(self.cols)] for row in range(self.rows)]
-                rows = '\n'.join([','.join(row) for row in rows])
+                    rows = [[self.ui.tableWidget.item(row, col).text() for col in range(self.cols)] for row in range(self.rows)]
+                    rows = '\n'.join([','.join(row) for row in rows])
 
-                f.write(rows)
+                    f.write(rows)
+        except AttributeError:
+            print('Save as file canceled')
 
     def clear_table(self):
         for _ in range(self.ui.tableWidget.rowCount()):
@@ -237,34 +242,35 @@ class MainWindow(QMainWindow):
     
     def closeEvent(self, event):
         if self.currentfile:
-            dlg = SaveDialog(self)
-            dlg.exec() 
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Збереження")
+            dlg.setText("Зберегти зміни?")
+            dlg.setStandardButtons(QMessageBox.Save | QMessageBox.No)
+            dlg.setIcon(QMessageBox.Question)
+            button = dlg.exec()
 
+            if button == QMessageBox.Save:
+                self.savefile()
 
-class SaveDialog(QDialog):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.parent = parent
-
-        self.setWindowTitle("Saving")
-
-        QBtn = QDialogButtonBox.Save | QDialogButtonBox.No
-
-        self.buttonBox = QDialogButtonBox(QBtn)
-        self.buttonBox.rejected.connect(self.close)
-        self.buttonBox.accepted.connect(self.save)
-
-        self.layout = QVBoxLayout()
-        message = QLabel("Зберегти зміни?")
-        self.layout.addWidget(message)
-        self.layout.addWidget(self.buttonBox)
-        self.setLayout(self.layout)
-
-    def save(self):
-        self.parent.savefile()
-        self.close()
+def excepthook(cls, exception, tb):
+    exc_type = cls.__name__
+    exc = ''.join(traceback.format_exception_only(exception))
+    exc_full = ''.join(traceback.format_exception(exception))
+    
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Critical)
+    msg.setWindowTitle(exc_type)
+    msg.setText("Сталася помилка")
+    msg.setInformativeText(exc)
+    msg.setDetailedText(exc_full)
+    msg.addButton('OK', QMessageBox.YesRole)
+    copy_button = msg.addButton('Copy', QMessageBox.ActionRole)
+    copy_button.clicked.connect(lambda: copy(exc_full))
+    msg.exec()
 
 if __name__ == "__main__":
+    sys.excepthook = excepthook
+
     app = QApplication(sys.argv)
     widget = MainWindow()
     widget.show()
