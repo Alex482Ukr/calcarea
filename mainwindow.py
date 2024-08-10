@@ -5,7 +5,7 @@ from tkinter import filedialog
 import traceback
 from pyperclip import copy
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QDialog, QDialogButtonBox, QVBoxLayout, QLabel, QMessageBox
+from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QMessageBox
 from PySide6.QtGui import QIcon, QColor
 from PySide6.QtCore import Qt, QModelIndex
 
