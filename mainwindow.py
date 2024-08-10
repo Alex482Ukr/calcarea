@@ -245,12 +245,18 @@ class MainWindow(QMainWindow):
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Збереження")
             dlg.setText("Зберегти зміни?")
-            dlg.setStandardButtons(QMessageBox.Save | QMessageBox.No)
+            dlg.setStandardButtons(QMessageBox.Save | QMessageBox.No | QMessageBox.Cancel)
             dlg.setIcon(QMessageBox.Question)
             button = dlg.exec()
 
             if button == QMessageBox.Save:
                 self.savefile()
+                event.accept()
+            elif button == QMessageBox.No:
+                event.accept()
+            else:
+                event.ignore()
+            
 
 def excepthook(cls, exception, tb):
     exc_type = cls.__name__
