@@ -91,10 +91,19 @@ class MainWindow(QMainWindow):
             self.ui.tableWidget.itemChanged.connect(self.update_values)
 
     def calculate_area(self):
-        for row in range(self.rows):
+        for row in range(0, self.rows):
             letter, width, length, area = self.getitems(row, 0, 1, 2, 4)
 
-            if '!' in letter.text():
+            letter = letter.text()
+            if letter[0] == '+':
+                if row-1 == -1:
+                    self.ui.tableWidget.item(row, 0).setText(letter.replace('+', ''))
+                else:
+                    main_value = Dec(self.ui.tableWidget.item(row-1, 4).text())
+                    add_value = Dec(self.ui.tableWidget.item(row, 4).text())
+                    self.ui.tableWidget.item(row-1, 4).setText(str(main_value + add_value))
+
+            if '!' in letter:
                 res = area.text()
                 res.replace(',', '.')
                 res = Dec(res)
@@ -117,7 +126,7 @@ class MainWindow(QMainWindow):
         for row in range(self.rows):
             summ += Dec(self.ui.tableWidget.item(row, 4).text())
             letter = self.ui.tableWidget.item(row, 0).text()
-            if letter and letter[0] in ('A', 'a', 'А', 'а'):
+            if any((c in ('A', 'a', 'А', 'а') for c in letter)):
                 sum_a += Dec(self.ui.tableWidget.item(row, 4).text())
 
         self.ui.area_dwelling.setText(str(sum_a))
@@ -208,12 +217,14 @@ class MainWindow(QMainWindow):
             letter = self.ui.tableWidget.item(row, 0).text()
             if not letter or ',' in letter:
                 self.ui.tableWidget.item(row, 0).setText('A')
-            elif 'ё' in letter:
-                self.ui.tableWidget.item(row, 0).setText(letter.replace('ё', "'"))
-            elif '!' in letter:
-                self.composite_area(row)
             else:
-                self.not_composite_area(row)
+                if 'ё' in letter:
+                    self.ui.tableWidget.item(row, 0).setText(letter.replace('ё', "'"))
+                    
+                if '!' in letter:
+                    self.composite_area(row)
+                else:
+                    self.not_composite_area(row)
 
             for col in range(1, 6):
                 value = self.ui.tableWidget.item(row, col).text()
