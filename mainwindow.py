@@ -109,9 +109,10 @@ class Table(QObject):
         for row in map(lambda item: item[0], items):
             self.__table.removeRow(row)
 
-        if items and self.rows:
+        if items:
             item = items[0]
-            self[item[0]-1][item[1]].setSelected(True)
+            if item[0] > 0:
+                self[item[0]-1][item[1]].setSelected(True)
 
     @Slot()
     def insert_after_current_row(self):
