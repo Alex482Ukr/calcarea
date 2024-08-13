@@ -3,7 +3,7 @@ import sys
 from decimal import Decimal as Dec
 from keyboard import add_hotkey
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
+from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QFileDialog
 from PySide6.QtGui import QIcon, QColor, QBrush
 from PySide6.QtCore import Qt, Signal, Slot, QObject
 
@@ -32,6 +32,12 @@ class MainWindow(QMainWindow):
 
         add_hotkey('tab', self.tab_add_row)
 
+        self.ui.actionOpen.triggered.connect(self.open_file)
+        self.ui.actionSave.triggered.connect(self.save_file)
+        self.ui.actionSaveAs.triggered.connect(self.save_as_file)
+
+        self.current_file = None
+
     @Slot(tuple)
     def display_area_sum(self, tpl):
         area_total, area_dw = tpl
@@ -44,6 +50,37 @@ class MainWindow(QMainWindow):
     @Slot()    
     def add_row(self):
         self.table.rows += 1
+    
+    @Slot()
+    def open_file(self):
+        path = QFileDialog.getOpenFileName(parent=self, 
+                                           caption="Відкрити", 
+                                           dir='save.csv', 
+                                           filter="Comma separated values (*.csv);;All files (*.*)",
+                                           )[0]
+        if path:
+            self.current_file = path
+            self.setWindowTitle(self.current_file)
+            self.table.load_file(path)
+        
+    @Slot()
+    def save_file(self):
+        if self.current_file:
+            self.table.write_file(self.current_file)
+        else:
+            self.save_as_file()
+
+    @Slot()
+    def save_as_file(self):
+        path = QFileDialog.getSaveFileName(parent=self, 
+                                           caption="Зберегти як", 
+                                           dir='save.csv', 
+                                           filter="Comma separated values (*.csv);;All files (*.*)", 
+                                           )[0]
+        if path:
+            self.current_file = path
+            self.setWindowTitle(self.current_file)
+            self.table.write_file(path)
 
     def tab_add_row(self):
         if self.table.rows and self.table.is_only_selected_item(self.table[-1][-1]):
@@ -114,8 +151,8 @@ class Table(QObject):
 
         if items:
             item = items[0]
-            if item[0] > 0:
-                self[item[0]-1][item[1]].setSelected(True)
+            if item[0] < self.rows:
+                self[item[0]][item[1]].setSelected(True)
 
     @Slot()
     def insert_after_current_row(self):
@@ -184,6 +221,21 @@ class Table(QObject):
 
     def is_only_selected_item(self, item):
         return self.__table.selectedItems() == [item]
+
+    def load_file(self, path):
+        with open(path, 'rt', encoding='utf-8') as f:
+            rows = tuple(row.split(',') for row in f.read().split('\n'))
+            self.rows = len(rows)
+            if rows:
+                for row in range(len(rows)):
+                    for col in range(len(rows[0])):
+                        self[row, col] = rows[row][col]
+
+
+    def write_file(self, path):
+        with open(path, 'wt', encoding='utf-8') as f:
+            f.write('\n'.join(','.join(str(self[row, col]) for col in range(4)) for row in range(len(self))))
+
 
 
 class Item(QTableWidgetItem):
