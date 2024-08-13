@@ -101,6 +101,10 @@ class Table(QObject):
 
         self.custom_area(row, False)
 
+    def remove_current_row(self):
+        for row in map(lambda item: self[item][0], self.__table.selectedItems()):
+            self.__table.removeRow(row)
+
     @Slot()
     def highlight_row(self):
         self.unhighlight_all()
