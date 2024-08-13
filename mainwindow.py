@@ -99,7 +99,8 @@ class Table(QObject):
         self.__table.setItem(row, 4, Item(Dec, rounding=1))
         self.__table.setItem(row, 5, Item(Dec, rounding=0))
 
-        self.custom_area(row, False)
+        for col in (4, 5):
+            self[row][col].editable = False
 
         self.__table.itemChanged.connect(self.update)
 
@@ -164,18 +165,6 @@ class Table(QObject):
                 sum_a += self[row, 4]
 
         self.area_sum_changed.emit((sum_, sum_a))
-
-
-    def custom_area(self, row, flag):
-        if flag:
-            for col in (1, 2):
-                self[row][col].editable = False
-            self[row][4].editable = True
-        else:
-            for col in (1, 2):
-                self[row][col].editable = True
-            for col in (4, 5):
-                self[row][col].editable = False
                 
 
 class Item(QTableWidgetItem):
