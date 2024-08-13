@@ -1,6 +1,7 @@
 # This Python file uses the following encoding: utf-8
 import sys
 from decimal import Decimal as Dec
+from keyboard import add_hotkey
 
 from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
 from PySide6.QtGui import QIcon, QColor, QBrush
@@ -29,6 +30,8 @@ class MainWindow(QMainWindow):
         self.ui.button_remove_row.clicked.connect(self.table.remove_current_row)
         self.ui.button_insert_row.clicked.connect(self.table.insert_after_current_row)
 
+        add_hotkey('tab', self.tab_add_row)
+
     @Slot(tuple)
     def display_area_sum(self, tpl):
         area_total, area_dw = tpl
@@ -42,9 +45,9 @@ class MainWindow(QMainWindow):
     def add_row(self):
         self.table.rows += 1
 
-    @Slot()    
-    def remove_row(self):
-        self.table.rows -= 1
+    def tab_add_row(self):
+        if self.table.rows and self.table.is_only_selected_item(self.table[-1][-1]):
+            self.add_row()
 
 
 class Table(QObject):
@@ -139,7 +142,6 @@ class Table(QObject):
     def update(self, item):
         try:
             self.__table.itemChanged.disconnect(self.update)
-            row, col = self[item]
 
             self.count_area()
             self.count_volume()
@@ -179,6 +181,9 @@ class Table(QObject):
                         self[row-1, col] = self[row-1][col].value + self[row][col].value
                         self[row][col].setBackground(QColor(255, 240, 200))
                         self[row-1][col].setBackground(QColor(220, 255, 220))
+
+    def is_only_selected_item(self, item):
+        return self.__table.selectedItems() == [item]
 
 
 class Item(QTableWidgetItem):
