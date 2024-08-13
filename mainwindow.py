@@ -1,9 +1,11 @@
 # This Python file uses the following encoding: utf-8
 import sys
+from traceback import format_exception_only, format_exception
 from decimal import Decimal as Dec
 from keyboard import add_hotkey
+from pyperclip import copy
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QFileDialog
+from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QFileDialog, QMessageBox
 from PySide6.QtGui import QIcon, QColor, QBrush
 from PySide6.QtCore import Qt, Signal, Slot, QObject
 
@@ -67,8 +69,9 @@ class MainWindow(QMainWindow):
     def save_file(self):
         if self.current_file:
             self.table.write_file(self.current_file)
+            return 'Success'
         else:
-            self.save_as_file()
+            return self.save_as_file()
 
     @Slot()
     def save_as_file(self):
@@ -81,10 +84,35 @@ class MainWindow(QMainWindow):
             self.current_file = path
             self.setWindowTitle(self.current_file)
             self.table.write_file(path)
+            return 'Success'
 
     def tab_add_row(self):
         if self.table.rows and self.table.is_only_selected_item(self.table[-1][-1]):
             self.add_row()
+    
+    def closeEvent(self, event):
+        while True:
+            if self.current_file or self.table.rows:
+                dlg = QMessageBox(self)
+                dlg.setWindowTitle("Збереження")
+                dlg.setText("Зберегти зміни?")
+                dlg.setStandardButtons(QMessageBox.Save | QMessageBox.No | QMessageBox.Cancel)
+                dlg.setIcon(QMessageBox.Question)
+                button = dlg.exec()
+
+                if button == QMessageBox.Save:
+                    if self.save_file():
+                        break
+                    event.accept()
+                elif button == QMessageBox.No:
+                    event.accept()
+                    break
+                else:
+                    event.ignore()
+                    break
+            else:
+                break
+            
 
 
 class Table(QObject):
@@ -310,7 +338,24 @@ class Item(QTableWidgetItem):
         return value
 
 
+def excepthook(cls, exception, tb):
+    exc_type = cls.__name__
+    exc = ''.join(format_exception_only(exception))
+    exc_full = ''.join(format_exception(exception))
+    
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Critical)
+    msg.setWindowTitle(exc_type)
+    msg.setText("Сталася помилка")
+    msg.setInformativeText(exc)
+    msg.setDetailedText(exc_full)
+    msg.addButton('OK', QMessageBox.YesRole)
+    copy_button = msg.addButton('Copy', QMessageBox.ActionRole)
+    copy_button.clicked.connect(lambda: copy(exc_full))
+    msg.exec()
+
 if __name__ == "__main__":
+    sys.excepthook = excepthook
     app = QApplication(sys.argv)
     widget = MainWindow()
     widget.show()
