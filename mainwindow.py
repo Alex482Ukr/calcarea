@@ -62,7 +62,7 @@ class Table(QObject):
         if isinstance(indx, Item):
             item = self.__table.indexFromItem(indx)
             return item.row(), item.column()
-        return tuple(self.__table.item(indx, col) for col in range(self.cols))
+        return tuple(row for row in self)[indx]
 
     def __setitem__(self, indx, value):
         self.__table.item(*indx).setText(value)
@@ -71,8 +71,7 @@ class Table(QObject):
         return self.rows
     
     def __iter__(self):
-        for row in range(self.rows):
-            yield self[row]
+        return iter(tuple(tuple(self.__table.item(row, col) for col in range(self.cols)) for row in range(self.rows)))
     
     @property
     def rows(self):
@@ -121,7 +120,7 @@ class Table(QObject):
         if rows:
             self.__table.insertRow(rows[0]+1)
             self.fill_row(rows[0]+1)
-
+            self.update(self[rows[0]+1][-1])
 
     @Slot()
     def highlight_row(self):
@@ -142,42 +141,66 @@ class Table(QObject):
             self.__table.itemChanged.disconnect(self.update)
             row, col = self[item]
 
-            self.count_area(row)
+            self.count_area()
+            self.count_volume()
+            self.composite_area()
             self.sum_area()
-            self.count_volume(row)
 
         finally:
             self.__table.itemChanged.connect(self.update)
 
-    def count_area(self, row):
-        self[row, 4] = self[row, 1] * self[row, 2]
+    def count_area(self):
+        for row in range(self.rows):
+            self[row, 4] = self[row, 1] * self[row, 2]
     
-    def count_volume(self, row):
-        self[row, 5] = self[row, 3] * self[row, 4]
+    def count_volume(self):
+        for row in range(self.rows):
+            self[row, 5] = self[row, 3] * self[row, 4]
 
     def sum_area(self):
         sum_ = Dec('0')
         sum_a = Dec('0')
 
         for row in range(len(self)):
-            sum_ += self[row, 4]
+            if not self[row, 0][0].startswith('+'):
+                sum_ += self[row, 4]
             if self[row, 0][0] in ('A', 'a', 'А', 'а'):
                 sum_a += self[row, 4]
 
         self.area_sum_changed.emit((sum_, sum_a))
-                
+
+    def composite_area(self):
+        for row in range(self.rows-1, -1, -1):
+            if self[row, 0].startswith('+'):
+                if row == 0:
+                    self[row, 0] = self[row, 0].replace('+', '')
+                else:
+                    for col in (4, 5):
+                        self[row-1, col] = self[row-1][col].value + self[row][col].value
+                        self[row][col].setBackground(QColor(255, 240, 200))
+                        self[row-1][col].setBackground(QColor(220, 255, 220))
+
 
 class Item(QTableWidgetItem):
-    def __init__(self, value_type, value=None, rounding=None, raw=False, *args, **kwargs):
+    def __init__(self, value_type, value=None, rounding=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.value_type = value_type
         self.rounding = rounding
-        self.raw = raw
+        self.value = value
 
         if not value:
             value = value_type()
         self.default = value
+
         self.setText(str(value))   
+
+    def __str__(self):
+        return str(self.text())
+
+    def __add__(self, other):
+        if self.value_type != other.value_type:
+            raise TypeError(f'Items value types not matching: {self.value_type} and {other.value_type}')
+        return self.text() + other.text()
 
     @property
     def editable(self):
@@ -189,43 +212,28 @@ class Item(QTableWidgetItem):
         else:
             self.setFlags(self.flags() & ~Qt.ItemIsEditable)
     
-    @property
-    def raw(self):
-        return self._raw
-    @raw.setter
-    def raw(self, value):
-        self._raw = value
-    
     def setText(self, text):
-        if not self.raw:
-            text = self.value_type(text)
-            if self.value_type in (int, float, Dec) and self.rounding is not None:
-                text = self.round(text, self.rounding)
+        text = self.value_type(text)
+        self.value = text
+
+        if self.value_type in (int, float, Dec) and self.rounding is not None:
+            text = self.round(text, self.rounding)
 
         super().setText(str(text))
     
     def text(self):
         text = self.value_type(super().text())
-        if not text and not self.raw:
-            self.reset()
+
+        if not text:
+            self.setText(self.default)
             return self.default
+        
         return text
     
-    def round(self, num, rounding):
+    @staticmethod
+    def round(num, rounding):
         num += Dec('0.000000001')
         return round(num, rounding)
-    
-    def reset(self):
-        self.setText(self.default)
-
-    def __str__(self):
-        return str(self.text())
-
-
-    def __add__(self, other):
-        if self.value_type != other.value_type:
-            raise TypeError(f'Items value types not matching: {self.value_type} and {other.value_type}')
-        return self.text() + other.text()
 
 
 if __name__ == "__main__":
