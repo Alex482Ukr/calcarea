@@ -218,7 +218,7 @@ class Item(QTableWidgetItem):
             self.setFlags(self.flags() & ~Qt.ItemIsEditable)
     
     def setText(self, text):
-        text = self.value_type(text)
+        text = self.verify_value(text)
         self.value = text
 
         if self.value_type in (int, float, Dec) and self.rounding is not None:
@@ -226,8 +226,11 @@ class Item(QTableWidgetItem):
 
         super().setText(str(text))
     
+    def set_raw_text(self, text):
+        super().setText(str(text))
+    
     def text(self):
-        text = self.value_type(super().text())
+        text = self.verify_value(super().text())
 
         if not text:
             self.setText(self.default)
@@ -239,6 +242,20 @@ class Item(QTableWidgetItem):
     def round(num, rounding):
         num += Dec('0.000000001')
         return round(num, rounding)
+    
+    def verify_value(self, value):
+        if not value:
+            value = self.default
+        else:
+            value = str(value).replace(',', '.')
+            value = str(value).replace('ё', "'")
+            try:
+                value = self.value_type(value)
+            except:
+                value = self.default
+
+        self.set_raw_text(value)
+        return value
 
 
 if __name__ == "__main__":
