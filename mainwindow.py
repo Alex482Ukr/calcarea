@@ -3,7 +3,7 @@ import sys
 from decimal import Decimal as Dec
 
 from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
-from PySide6.QtGui import QIcon, QColor
+from PySide6.QtGui import QIcon, QColor, QBrush
 from PySide6.QtCore import Qt, Signal, Slot, QObject
 
 # Important:
@@ -25,7 +25,9 @@ class MainWindow(QMainWindow):
 
         self.table = Table(self.ui.tableWidget)
         self.table.area_sum_changed.connect(self.display_area_sum)
-        self.ui.pushButton.clicked.connect(self.add_row)
+        self.ui.button_add_row.clicked.connect(self.add_row)
+        self.ui.button_remove_row.clicked.connect(self.table.remove_current_row)
+        self.ui.button_insert_row.clicked.connect(self.table.insert_after_current_row)
 
     @Slot(tuple)
     def display_area_sum(self, tpl):
@@ -77,20 +79,18 @@ class Table(QObject):
         return self.__table.rowCount()
     @rows.setter
     def rows(self, num):
-        self.__table.itemChanged.disconnect(self.update)
-
         filled_rows = self.rows
         self.__table.setRowCount(num)
         for row in range(filled_rows, self.rows):
             self.fill_row(row)
-        
-        self.__table.itemChanged.connect(self.update)
     
     @property
     def cols(self):
         return self.__table.columnCount()
     
     def fill_row(self, row):
+        self.__table.itemChanged.disconnect(self.update)
+
         self.__table.setItem(row, 0, Item(str, 'A'))
 
         for col in range(1, 4):
@@ -101,9 +101,25 @@ class Table(QObject):
 
         self.custom_area(row, False)
 
+        self.__table.itemChanged.connect(self.update)
+
+    @Slot()
     def remove_current_row(self):
-        for row in map(lambda item: self[item][0], self.__table.selectedItems()):
+        items = list(map(lambda item: self[item], self.__table.selectedItems()))
+        for row in map(lambda item: item[0], items):
             self.__table.removeRow(row)
+
+        if items and self.rows:
+            item = items[0]
+            self[item[0]-1][item[1]].setSelected(True)
+
+    @Slot()
+    def insert_after_current_row(self):
+        rows = list(map(lambda item: self[item][0], self.__table.selectedItems()))
+        if rows:
+            self.__table.insertRow(rows[0]+1)
+            self.fill_row(rows[0]+1)
+
 
     @Slot()
     def highlight_row(self):
@@ -116,7 +132,7 @@ class Table(QObject):
     def unhighlight_all(self):
         for row in self:
             for item in row:
-                item.setBackground(QColor(255, 255, 255))
+                item.setBackground(QBrush())
 
     @Slot(QTableWidgetItem)
     def update(self, item):

@@ -51,30 +51,30 @@ class Ui_MainWindow(object):
         self.tableWidget.setHorizontalHeaderItem(5, __qtablewidgetitem5)
         self.tableWidget.setObjectName(u"tableWidget")
         self.tableWidget.setGeometry(QRect(10, 0, 641, 341))
-        self.pushButton = QPushButton(self.centralwidget)
-        self.pushButton.setObjectName(u"pushButton")
-        self.pushButton.setGeometry(QRect(660, 0, 201, 25))
+        self.button_add_row = QPushButton(self.centralwidget)
+        self.button_add_row.setObjectName(u"button_add_row")
+        self.button_add_row.setGeometry(QRect(660, 0, 201, 25))
         self.area_dwelling = QTextBrowser(self.centralwidget)
         self.area_dwelling.setObjectName(u"area_dwelling")
-        self.area_dwelling.setGeometry(QRect(770, 80, 91, 31))
+        self.area_dwelling.setGeometry(QRect(770, 120, 91, 31))
         self.label = QLabel(self.centralwidget)
         self.label.setObjectName(u"label")
-        self.label.setGeometry(QRect(660, 80, 101, 31))
+        self.label.setGeometry(QRect(660, 120, 101, 31))
         font = QFont()
         font.setPointSize(12)
         self.label.setFont(font)
         self.label.setAlignment(Qt.AlignCenter)
         self.label_3 = QLabel(self.centralwidget)
         self.label_3.setObjectName(u"label_3")
-        self.label_3.setGeometry(QRect(660, 110, 101, 31))
+        self.label_3.setGeometry(QRect(660, 150, 101, 31))
         self.label_3.setFont(font)
         self.label_3.setAlignment(Qt.AlignCenter)
         self.area_economical = QTextBrowser(self.centralwidget)
         self.area_economical.setObjectName(u"area_economical")
-        self.area_economical.setGeometry(QRect(770, 110, 91, 31))
+        self.area_economical.setGeometry(QRect(770, 150, 91, 31))
         self.label_4 = QLabel(self.centralwidget)
         self.label_4.setObjectName(u"label_4")
-        self.label_4.setGeometry(QRect(660, 140, 101, 31))
+        self.label_4.setGeometry(QRect(660, 180, 101, 31))
         font1 = QFont()
         font1.setPointSize(12)
         font1.setBold(True)
@@ -82,15 +82,13 @@ class Ui_MainWindow(object):
         self.label_4.setAlignment(Qt.AlignCenter)
         self.area_total = QTextBrowser(self.centralwidget)
         self.area_total.setObjectName(u"area_total")
-        self.area_total.setGeometry(QRect(770, 140, 91, 31))
-        self.volume_total = QTextBrowser(self.centralwidget)
-        self.volume_total.setObjectName(u"volume_total")
-        self.volume_total.setGeometry(QRect(770, 200, 91, 31))
-        self.label_6 = QLabel(self.centralwidget)
-        self.label_6.setObjectName(u"label_6")
-        self.label_6.setGeometry(QRect(660, 200, 101, 31))
-        self.label_6.setFont(font1)
-        self.label_6.setAlignment(Qt.AlignCenter)
+        self.area_total.setGeometry(QRect(770, 180, 91, 31))
+        self.button_insert_row = QPushButton(self.centralwidget)
+        self.button_insert_row.setObjectName(u"button_insert_row")
+        self.button_insert_row.setGeometry(QRect(660, 30, 101, 25))
+        self.button_remove_row = QPushButton(self.centralwidget)
+        self.button_remove_row.setObjectName(u"button_remove_row")
+        self.button_remove_row.setGeometry(QRect(760, 30, 101, 25))
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
@@ -135,7 +133,7 @@ class Ui_MainWindow(object):
         ___qtablewidgetitem4.setText(QCoreApplication.translate("MainWindow", u"\u041f\u043b\u043e\u0449\u0430", None));
         ___qtablewidgetitem5 = self.tableWidget.horizontalHeaderItem(5)
         ___qtablewidgetitem5.setText(QCoreApplication.translate("MainWindow", u"\u041e\u0431'\u0454\u043c", None));
-        self.pushButton.setText(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0434\u0430\u0442\u0438 \u0440\u044f\u0434\u043e\u043a", None))
+        self.button_add_row.setText(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0434\u0430\u0442\u0438 \u0440\u044f\u0434\u043e\u043a", None))
         self.area_dwelling.setHtml(QCoreApplication.translate("MainWindow", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
@@ -163,15 +161,8 @@ class Ui_MainWindow(object):
 "li.checked::marker { content: \"\\2612\"; }\n"
 "</style></head><body style=\" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">0</p></body></html>", None))
-        self.volume_total.setHtml(QCoreApplication.translate("MainWindow", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"hr { height: 1px; border-width: 0; }\n"
-"li.unchecked::marker { content: \"\\2610\"; }\n"
-"li.checked::marker { content: \"\\2612\"; }\n"
-"</style></head><body style=\" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">0</p></body></html>", None))
-        self.label_6.setText(QCoreApplication.translate("MainWindow", u"V\u0437\u0430\u0433\u0430\u043b\u044c\u043d\u0438\u0439", None))
+        self.button_insert_row.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0441\u0442\u0430\u0432\u0438\u0442\u0438 \u0440\u044f\u0434\u043e\u043a", None))
+        self.button_remove_row.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0434\u0430\u043b\u0438\u0442\u0438 \u0440\u044f\u0434\u043e\u043a", None))
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"\u0424\u0430\u0439\u043b", None))
     # retranslateUi
 
