@@ -4,6 +4,7 @@ from traceback import format_exception_only, format_exception
 from decimal import Decimal as Dec
 from keyboard import add_hotkey
 from pyperclip import copy
+from openpyxl import Workbook
 
 from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QFileDialog, QMessageBox
 from PySide6.QtGui import QIcon, QColor, QBrush
@@ -85,12 +86,29 @@ class MainWindow(QMainWindow):
             self.setWindowTitle(self.current_file)
             self.table.write_file(path)
             return 'Success'
+        
+    @Slot()
+    def export_xlsx(self):
+        path = QFileDialog.getSaveFileName(parent=self, 
+                                           caption="Зберегти як", 
+                                           dir='save.csv', 
+                                           filter="Comma separated values (*.csv);;All files (*.*)", 
+                                           )[0]
+        if path:
+            if self.ask_save() != "Ignore":
+                self.table.write_xlsx(path)
 
     def tab_add_row(self):
         if self.table.rows and self.table.is_only_selected_item(self.table[-1][-1]):
             self.add_row()
     
     def closeEvent(self, event):
+        if self.ask_save() == 'Accept':
+            event.accept
+        else:
+            event.ignore()
+    
+    def ask_save(self):
         while True:
             if self.current_file or self.table.rows:
                 dlg = QMessageBox(self)
@@ -102,17 +120,15 @@ class MainWindow(QMainWindow):
 
                 if button == QMessageBox.Save:
                     if self.save_file():
-                        break
-                    event.accept()
+                        return "Accept"
                 elif button == QMessageBox.No:
-                    event.accept()
-                    break
+                    return "Accept"
                 else:
-                    event.ignore()
-                    break
+                    return "Ignore"
             else:
-                break
-            
+                return "Accept"
+                
+        
 
 
 class Table(QObject):
@@ -263,6 +279,13 @@ class Table(QObject):
     def write_file(self, path):
         with open(path, 'wt', encoding='utf-8') as f:
             f.write('\n'.join(','.join(str(self[row, col]) for col in range(4)) for row in range(len(self))))
+    
+    def write_xlsx(self, path):
+        wb = Workbook()
+        ws = wb.active
+        for row in self:
+            ws.append(tuple(map(lambda item: item.text(), row)))
+        wb.save(path)
 
 
 
