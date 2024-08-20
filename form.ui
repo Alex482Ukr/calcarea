@@ -255,6 +255,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
     <addaction name="actionOpen"/>
     <addaction name="actionSave"/>
     <addaction name="actionSaveAs"/>
+    <addaction name="actionExport"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
@@ -278,6 +279,11 @@ li.checked::marker { content: &quot;\2612&quot;; }
   <action name="actionSaveAs">
    <property name="text">
     <string>Зберегти як</string>
+   </property>
+  </action>
+  <action name="actionExport">
+   <property name="text">
+    <string>Експортувати в Excel</string>
    </property>
   </action>
  </widget>

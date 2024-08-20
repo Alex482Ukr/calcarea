@@ -33,11 +33,16 @@ class MainWindow(QMainWindow):
         self.ui.button_remove_row.clicked.connect(self.table.remove_current_row)
         self.ui.button_insert_row.clicked.connect(self.table.insert_after_current_row)
 
-        add_hotkey('tab', self.tab_add_row)
+        try:
+            add_hotkey('tab', self.tab_add_row)
+        except ImportError as e:
+            print('''"Press Tab to add new line" cannot be implemented:''')
+            print(' keyboard:', *format_exception_only(e))
 
         self.ui.actionOpen.triggered.connect(self.open_file)
         self.ui.actionSave.triggered.connect(self.save_file)
         self.ui.actionSaveAs.triggered.connect(self.save_as_file)
+        self.ui.actionExport.triggered.connect(self.export_xlsx)
 
         self.current_file = None
 
@@ -59,7 +64,7 @@ class MainWindow(QMainWindow):
         path = QFileDialog.getOpenFileName(parent=self, 
                                            caption="Відкрити", 
                                            dir='save.csv', 
-                                           filter="Comma separated values (*.csv);;All files (*.*)",
+                                           filter="Comma separated values (*.csv);;Всі файли (*.*)",
                                            )[0]
         if path:
             self.current_file = path
@@ -79,7 +84,7 @@ class MainWindow(QMainWindow):
         path = QFileDialog.getSaveFileName(parent=self, 
                                            caption="Зберегти як", 
                                            dir='save.csv', 
-                                           filter="Comma separated values (*.csv);;All files (*.*)", 
+                                           filter="Comma separated values (*.csv);;Всі файли (*.*)",
                                            )[0]
         if path:
             self.current_file = path
@@ -89,14 +94,17 @@ class MainWindow(QMainWindow):
         
     @Slot()
     def export_xlsx(self):
+        if self.ask_save() == "Ignore":
+            return
+
+        default_path = self.current_file.split('.')[0] + '.xlsx' if self.current_file else "export.xlsx"
         path = QFileDialog.getSaveFileName(parent=self, 
-                                           caption="Зберегти як", 
-                                           dir='save.csv', 
-                                           filter="Comma separated values (*.csv);;All files (*.*)", 
+                                           caption="Експортувати як",
+                                           dir=default_path,
+                                           filter="Таблиця Excel (*.xlsx);;Всі файли (*.*)",
                                            )[0]
         if path:
-            if self.ask_save() != "Ignore":
-                self.table.write_xlsx(path)
+            self.table.write_xlsx(path)
 
     def tab_add_row(self):
         if self.table.rows and self.table.is_only_selected_item(self.table[-1][-1]):
