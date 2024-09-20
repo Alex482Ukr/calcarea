@@ -45,7 +45,7 @@ class Ui_MainWindow(object):
         self.centralwidget.setObjectName(u"centralwidget")
         self.tabWidget = QTabWidget(self.centralwidget)
         self.tabWidget.setObjectName(u"tabWidget")
-        self.tabWidget.setGeometry(QRect(10, 0, 701, 451))
+        self.tabWidget.setGeometry(QRect(9, 0, 701, 451))
         self.tab = QWidget()
         self.tab.setObjectName(u"tab")
         self.tableWidget = QTableWidget(self.tab)
@@ -136,15 +136,58 @@ class Ui_MainWindow(object):
         self.toolBox.setGeometry(QRect(0, 0, 691, 321))
         self.page = QWidget()
         self.page.setObjectName(u"page")
-        self.page.setGeometry(QRect(0, 0, 691, 228))
-        self.toolBox.addItem(self.page, u"Page 1")
-        self.page_3 = QWidget()
-        self.page_3.setObjectName(u"page_3")
-        self.toolBox.addItem(self.page_3, u"Page")
-        self.page_2 = QWidget()
-        self.page_2.setObjectName(u"page_2")
-        self.page_2.setGeometry(QRect(0, 0, 691, 228))
-        self.toolBox.addItem(self.page_2, u"Page 2")
+        self.tableWidget_2 = QTableWidget(self.page)
+        if (self.tableWidget_2.columnCount() < 6):
+            self.tableWidget_2.setColumnCount(6)
+        __qtablewidgetitem6 = QTableWidgetItem()
+        self.tableWidget_2.setHorizontalHeaderItem(0, __qtablewidgetitem6)
+        __qtablewidgetitem7 = QTableWidgetItem()
+        self.tableWidget_2.setHorizontalHeaderItem(1, __qtablewidgetitem7)
+        __qtablewidgetitem8 = QTableWidgetItem()
+        self.tableWidget_2.setHorizontalHeaderItem(2, __qtablewidgetitem8)
+        __qtablewidgetitem9 = QTableWidgetItem()
+        self.tableWidget_2.setHorizontalHeaderItem(3, __qtablewidgetitem9)
+        __qtablewidgetitem10 = QTableWidgetItem()
+        self.tableWidget_2.setHorizontalHeaderItem(4, __qtablewidgetitem10)
+        __qtablewidgetitem11 = QTableWidgetItem()
+        self.tableWidget_2.setHorizontalHeaderItem(5, __qtablewidgetitem11)
+        self.tableWidget_2.setObjectName(u"tableWidget_2")
+        self.tableWidget_2.setGeometry(QRect(0, 0, 461, 411))
+        self.tableWidget_2.horizontalHeader().setDefaultSectionSize(70)
+        self.label_6 = QLabel(self.page)
+        self.label_6.setObjectName(u"label_6")
+        self.label_6.setGeometry(QRect(480, 130, 101, 31))
+        self.label_6.setFont(font1)
+        self.label_6.setAlignment(Qt.AlignCenter)
+        self.label_5 = QLabel(self.page)
+        self.label_5.setObjectName(u"label_5")
+        self.label_5.setGeometry(QRect(480, 100, 101, 31))
+        self.label_5.setFont(font)
+        self.label_5.setAlignment(Qt.AlignCenter)
+        self.area_economical_2 = QTextBrowser(self.page)
+        self.area_economical_2.setObjectName(u"area_economical_2")
+        self.area_economical_2.setGeometry(QRect(590, 100, 91, 31))
+        self.button_insert_row_2 = QPushButton(self.page)
+        self.button_insert_row_2.setObjectName(u"button_insert_row_2")
+        self.button_insert_row_2.setGeometry(QRect(480, 30, 101, 25))
+        self.area_total_2 = QTextBrowser(self.page)
+        self.area_total_2.setObjectName(u"area_total_2")
+        self.area_total_2.setGeometry(QRect(590, 130, 91, 31))
+        self.label_2 = QLabel(self.page)
+        self.label_2.setObjectName(u"label_2")
+        self.label_2.setGeometry(QRect(480, 70, 101, 31))
+        self.label_2.setFont(font)
+        self.label_2.setAlignment(Qt.AlignCenter)
+        self.button_remove_row_2 = QPushButton(self.page)
+        self.button_remove_row_2.setObjectName(u"button_remove_row_2")
+        self.button_remove_row_2.setGeometry(QRect(580, 30, 101, 25))
+        self.button_add_row_2 = QPushButton(self.page)
+        self.button_add_row_2.setObjectName(u"button_add_row_2")
+        self.button_add_row_2.setGeometry(QRect(480, 0, 201, 25))
+        self.area_dwelling_2 = QTextBrowser(self.page)
+        self.area_dwelling_2.setObjectName(u"area_dwelling_2")
+        self.area_dwelling_2.setGeometry(QRect(590, 70, 91, 31))
+        self.toolBox.addItem(self.page, u"Page")
         self.button_add_floor = QPushButton(self.tab_2)
         self.button_add_floor.setObjectName(u"button_add_floor")
         self.button_add_floor.setGeometry(QRect(10, 340, 151, 25))
@@ -265,9 +308,49 @@ class Ui_MainWindow(object):
 "</style></head><body style=\" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">0</p></body></html>", None))
         self.label_9.setText(QCoreApplication.translate("MainWindow", u"S\u0436\u0438\u0442\u043b\u043e\u0432\u0430", None))
-        self.toolBox.setItemText(self.toolBox.indexOf(self.page), QCoreApplication.translate("MainWindow", u"Page 1", None))
-        self.toolBox.setItemText(self.toolBox.indexOf(self.page_3), QCoreApplication.translate("MainWindow", u"Page", None))
-        self.toolBox.setItemText(self.toolBox.indexOf(self.page_2), QCoreApplication.translate("MainWindow", u"Page 2", None))
+        ___qtablewidgetitem6 = self.tableWidget_2.horizontalHeaderItem(0)
+        ___qtablewidgetitem6.setText(QCoreApplication.translate("MainWindow", u"\u0411\u0443\u043a\u0432\u0430", None));
+        ___qtablewidgetitem7 = self.tableWidget_2.horizontalHeaderItem(1)
+        ___qtablewidgetitem7.setText(QCoreApplication.translate("MainWindow", u"\u0428\u0438\u0440\u0438\u043d\u0430", None));
+        ___qtablewidgetitem8 = self.tableWidget_2.horizontalHeaderItem(2)
+        ___qtablewidgetitem8.setText(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0432\u0436\u0438\u043d\u0430", None));
+        ___qtablewidgetitem9 = self.tableWidget_2.horizontalHeaderItem(3)
+        ___qtablewidgetitem9.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0441\u043e\u0442\u0430", None));
+        ___qtablewidgetitem10 = self.tableWidget_2.horizontalHeaderItem(4)
+        ___qtablewidgetitem10.setText(QCoreApplication.translate("MainWindow", u"\u041f\u043b\u043e\u0449\u0430", None));
+        ___qtablewidgetitem11 = self.tableWidget_2.horizontalHeaderItem(5)
+        ___qtablewidgetitem11.setText(QCoreApplication.translate("MainWindow", u"\u041e\u0431'\u0454\u043c", None));
+        self.label_6.setText(QCoreApplication.translate("MainWindow", u"S\u0437\u0430\u0433\u0430\u043b\u044c\u043d\u0430", None))
+        self.label_5.setText(QCoreApplication.translate("MainWindow", u"S\u0433\u043e\u0441\u043f", None))
+        self.area_economical_2.setHtml(QCoreApplication.translate("MainWindow", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"hr { height: 1px; border-width: 0; }\n"
+"li.unchecked::marker { content: \"\\2610\"; }\n"
+"li.checked::marker { content: \"\\2612\"; }\n"
+"</style></head><body style=\" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">0</p></body></html>", None))
+        self.button_insert_row_2.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0441\u0442\u0430\u0432\u0438\u0442\u0438 \u0440\u044f\u0434\u043e\u043a", None))
+        self.area_total_2.setHtml(QCoreApplication.translate("MainWindow", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"hr { height: 1px; border-width: 0; }\n"
+"li.unchecked::marker { content: \"\\2610\"; }\n"
+"li.checked::marker { content: \"\\2612\"; }\n"
+"</style></head><body style=\" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">0</p></body></html>", None))
+        self.label_2.setText(QCoreApplication.translate("MainWindow", u"S\u0436\u0438\u0442\u043b\u043e\u0432\u0430", None))
+        self.button_remove_row_2.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0434\u0430\u043b\u0438\u0442\u0438 \u0440\u044f\u0434\u043e\u043a", None))
+        self.button_add_row_2.setText(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0434\u0430\u0442\u0438 \u0440\u044f\u0434\u043e\u043a", None))
+        self.area_dwelling_2.setHtml(QCoreApplication.translate("MainWindow", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"hr { height: 1px; border-width: 0; }\n"
+"li.unchecked::marker { content: \"\\2610\"; }\n"
+"li.checked::marker { content: \"\\2612\"; }\n"
+"</style></head><body style=\" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">0</p></body></html>", None))
+        self.toolBox.setItemText(self.toolBox.indexOf(self.page), QCoreApplication.translate("MainWindow", u"Page", None))
         self.button_add_floor.setText(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0434\u0430\u0442\u0438 \u043f\u043e\u0432\u0435\u0440\u0445", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QCoreApplication.translate("MainWindow", u"Tab 2", None))
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"\u0424\u0430\u0439\u043b", None))

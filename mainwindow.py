@@ -6,9 +6,9 @@ from keyboard import add_hotkey
 from pyperclip import copy
 from openpyxl import Workbook
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QFileDialog, QMessageBox, QWidget
+from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QFileDialog, QMessageBox, QWidget, QTableWidget, QTextBrowser
 from PySide6.QtGui import QIcon, QColor, QBrush
-from PySide6.QtCore import Qt, Signal, Slot, QObject
+from PySide6.QtCore import Qt, Signal, Slot, QObject, QRect, QCoreApplication
 
 # Important:
 # You need to run the following command to generate the ui_form.py file
@@ -48,14 +48,20 @@ class MainWindow(QMainWindow):
 
         self.current_file = None
 
+        self.floors = []
+        self.ui.toolBox.removeItem(0)
+        self.add_floor()
+
     @Slot(tuple)
-    def display_area_sum(self, tpl):
-        area_total, area_dw = tpl
+    def display_area_sum(self, areas: tuple[Dec, Dec], txt_browsers: tuple[QTextBrowser, QTextBrowser, QTextBrowser]):
+        area_total, area_dw = areas
+        dwelling_widget, total_widget, economical_widget = txt_browsers
+
         area_ec = area_total - area_dw
 
-        self.ui.area_dwelling.setText(str(area_dw))
-        self.ui.area_total.setText(str(area_total))
-        self.ui.area_economical.setText(str(area_ec))
+        dwelling_widget.setText(str(area_dw))
+        total_widget.setText(str(area_total))
+        economical_widget.setText(str(area_ec))
 
     @Slot()    
     def add_row(self):
@@ -110,7 +116,38 @@ class MainWindow(QMainWindow):
 
     @Slot()
     def add_floor(self):
-        self.ui.toolBox.insertItem(i := self.ui.toolBox.count(), QWidget(), QIcon(), f'Поверх {i}')
+        i = self.ui.toolBox.count() + 1
+        self.floors.append(self.create_table(self.ui.toolBox.widget(self.ui.toolBox.addItem(QWidget(), QIcon(), f'Поверх {i}'))))
+    
+    def create_table(self, parent: QWidget):
+        table = QTableWidget(parent)
+
+        if (table.columnCount() < 6):
+            table.setColumnCount(6)
+
+        for i in range(6):
+            table.setHorizontalHeaderItem(i, QTableWidgetItem())
+    
+        table.setObjectName(f"tableWidget_{i}")
+        table.setGeometry(QRect(0, 0, 461, 411))
+        table.horizontalHeader().setDefaultSectionSize(70)
+
+
+        ___qtablewidgetitem = table.horizontalHeaderItem(0)
+        ___qtablewidgetitem.setText(QCoreApplication.translate("MainWindow", u"\u0411\u0443\u043a\u0432\u0430", None))
+        ___qtablewidgetitem1 = table.horizontalHeaderItem(1)
+        ___qtablewidgetitem1.setText(QCoreApplication.translate("MainWindow", u"\u0428\u0438\u0440\u0438\u043d\u0430", None))
+        ___qtablewidgetitem2 = table.horizontalHeaderItem(2)
+        ___qtablewidgetitem2.setText(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0432\u0436\u0438\u043d\u0430", None))
+        ___qtablewidgetitem3 = table.horizontalHeaderItem(3)
+        ___qtablewidgetitem3.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0441\u043e\u0442\u0430", None))
+        ___qtablewidgetitem4 = table.horizontalHeaderItem(4)
+        ___qtablewidgetitem4.setText(QCoreApplication.translate("MainWindow", u"\u041f\u043b\u043e\u0449\u0430", None))
+        ___qtablewidgetitem5 = table.horizontalHeaderItem(5)
+        ___qtablewidgetitem5.setText(QCoreApplication.translate("MainWindow", u"\u041e\u0431'\u0454\u043c", None))
+
+
+        return table
 
     def tab_add_row(self):
         if self.table.rows and self.table.is_only_selected_item(self.table[-1][-1]):
