@@ -180,6 +180,76 @@ class MainWindow(QMainWindow):
                 return "Accept"
                 
         
+class Item(QTableWidgetItem):
+    def __init__(self, value_type, value=None, rounding=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.value_type = value_type
+        self.rounding = rounding
+        self.value = value
+
+        if not value:
+            value = value_type()
+        self.default = value
+
+        self.setText(str(value))   
+
+    def __str__(self):
+        return str(self.text())
+
+    def __add__(self, other):
+        if self.value_type != other.value_type:
+            raise TypeError(f'Items value types not matching: {self.value_type} and {other.value_type}')
+        return self.text() + other.text()
+
+    @property
+    def editable(self):
+        return Qt.ItemIsEditable in self.flags()
+    @editable.setter
+    def editable(self, flag):
+        if flag:
+            self.setFlags(self.flags() | Qt.ItemIsEditable)
+        else:
+            self.setFlags(self.flags() & ~Qt.ItemIsEditable)
+    
+    def setText(self, text):
+        text = self.verify_value(text)
+        self.value = text
+
+        if self.value_type in (int, float, Dec) and self.rounding is not None:
+            text = self.round(text, self.rounding)
+
+        super().setText(str(text))
+    
+    def set_raw_text(self, text):
+        super().setText(str(text))
+    
+    def text(self):
+        text = self.verify_value(super().text())
+
+        if not text:
+            self.setText(self.default)
+            return self.default
+        
+        return text
+    
+    @staticmethod
+    def round(num, rounding):
+        num += Dec('0.000000001')
+        return round(num, rounding)
+    
+    def verify_value(self, value):
+        if not value:
+            value = self.default
+        else:
+            value = str(value).replace(',', '.')
+            value = str(value).replace('ё', "'")
+            try:
+                value = self.value_type(value)
+            except:
+                value = self.default
+
+        self.set_raw_text(value)
+        return value
 
 
 class Table(QObject):
@@ -338,78 +408,6 @@ class Table(QObject):
             ws.append(tuple(map(lambda item: item.text(), row)))
         wb.save(path)
 
-
-
-class Item(QTableWidgetItem):
-    def __init__(self, value_type, value=None, rounding=None, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.value_type = value_type
-        self.rounding = rounding
-        self.value = value
-
-        if not value:
-            value = value_type()
-        self.default = value
-
-        self.setText(str(value))   
-
-    def __str__(self):
-        return str(self.text())
-
-    def __add__(self, other):
-        if self.value_type != other.value_type:
-            raise TypeError(f'Items value types not matching: {self.value_type} and {other.value_type}')
-        return self.text() + other.text()
-
-    @property
-    def editable(self):
-        return Qt.ItemIsEditable in self.flags()
-    @editable.setter
-    def editable(self, flag):
-        if flag:
-            self.setFlags(self.flags() | Qt.ItemIsEditable)
-        else:
-            self.setFlags(self.flags() & ~Qt.ItemIsEditable)
-    
-    def setText(self, text):
-        text = self.verify_value(text)
-        self.value = text
-
-        if self.value_type in (int, float, Dec) and self.rounding is not None:
-            text = self.round(text, self.rounding)
-
-        super().setText(str(text))
-    
-    def set_raw_text(self, text):
-        super().setText(str(text))
-    
-    def text(self):
-        text = self.verify_value(super().text())
-
-        if not text:
-            self.setText(self.default)
-            return self.default
-        
-        return text
-    
-    @staticmethod
-    def round(num, rounding):
-        num += Dec('0.000000001')
-        return round(num, rounding)
-    
-    def verify_value(self, value):
-        if not value:
-            value = self.default
-        else:
-            value = str(value).replace(',', '.')
-            value = str(value).replace('ё', "'")
-            try:
-                value = self.value_type(value)
-            except:
-                value = self.default
-
-        self.set_raw_text(value)
-        return value
 
 
 def excepthook(cls, exception, tb):
