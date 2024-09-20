@@ -54,7 +54,7 @@ class MainWindow(QMainWindow):
         self.current_file = None
 
     @Slot(tuple)
-    def display_area_sum(self, tpl: tuple[Dec]) -> None:
+    def display_area_sum(self, tpl: tuple[Dec, Dec, Dec]) -> None:
         '''Displays area sums in textboxes'''
 
         area_total, area_dw = tpl
@@ -243,7 +243,7 @@ class Table(QObject):
         self.__table.itemChanged.connect(self.update)
         self.__table.itemSelectionChanged.connect(self.highlight_row)
     
-    def __getitem__(self, indx: int | tuple | Item) -> tuple[Item] | str | tuple[int]:
+    def __getitem__(self, indx: int | tuple[int, int] | Item) -> tuple[Item] | str | tuple[int, int]:
         '''Return row by given index
         or return item text by given tuple of item coordinates
         or return tuple of item coordinates of given item object'''
@@ -255,7 +255,7 @@ class Table(QObject):
             return item.row(), item.column()
         return tuple(row for row in self)[indx]
 
-    def __setitem__(self, indx: Iterable[int], value: Any) -> None:
+    def __setitem__(self, indx: Iterable[int, int], value: Any) -> None:
         '''Setting text of item with given coordinates'''
         self.__table.item(*indx).setText(value)
     
@@ -263,7 +263,7 @@ class Table(QObject):
         '''Returns amount of rows in the table'''
         return self.rows
     
-    def __iter__(self) -> Iterator:
+    def __iter__(self) -> Iterator[Item]:
         '''Returns iterator of Item objects in the table'''
         return iter(tuple(tuple(self.__table.item(row, col) for col in range(self.cols)) for row in range(self.rows)))
     
