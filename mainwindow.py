@@ -6,7 +6,7 @@ from keyboard import add_hotkey
 from pyperclip import copy
 from openpyxl import Workbook
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QFileDialog, QMessageBox
+from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QFileDialog, QMessageBox, QWidget
 from PySide6.QtGui import QIcon, QColor, QBrush
 from PySide6.QtCore import Qt, Signal, Slot, QObject
 
@@ -43,6 +43,8 @@ class MainWindow(QMainWindow):
         self.ui.actionSave.triggered.connect(self.save_file)
         self.ui.actionSaveAs.triggered.connect(self.save_as_file)
         self.ui.actionExport.triggered.connect(self.export_xlsx)
+        
+        self.ui.button_add_floor.clicked.connect(self.add_floor)
 
         self.current_file = None
 
@@ -105,6 +107,10 @@ class MainWindow(QMainWindow):
                                            )[0]
         if path:
             self.table.write_xlsx(path)
+
+    @Slot()
+    def add_floor(self):
+        self.ui.toolBox.insertItem(i := self.ui.toolBox.count(), QWidget(), QIcon(), f'Поверх {i}')
 
     def tab_add_row(self):
         if self.table.rows and self.table.is_only_selected_item(self.table[-1][-1]):
