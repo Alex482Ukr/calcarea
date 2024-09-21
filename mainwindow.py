@@ -6,8 +6,8 @@ from keyboard import add_hotkey
 from pyperclip import copy
 from openpyxl import Workbook
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QFileDialog, QMessageBox, QWidget, QTableWidget, QTextBrowser
-from PySide6.QtGui import QIcon, QColor, QBrush
+from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QFileDialog, QMessageBox, QWidget, QTableWidget, QTextBrowser, QPushButton, QLabel
+from PySide6.QtGui import QIcon, QColor, QBrush, QFont
 from PySide6.QtCore import Qt, Signal, Slot, QObject, QRect, QCoreApplication
 
 # Important:
@@ -28,16 +28,10 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(icon)
 
         self.table = Table(self.ui.tableWidget)
-        self.table.area_sum_changed.connect(self.display_area_sum)
-        self.ui.button_add_row.clicked.connect(self.add_row)
+        self.table.area_sum_changed.connect(self.connect_area_widgets((self.ui.area_total, self.ui.area_dwelling, self.ui.area_economical)))
+        self.ui.button_add_row.clicked.connect(self.table.add_row)
         self.ui.button_remove_row.clicked.connect(self.table.remove_current_row)
         self.ui.button_insert_row.clicked.connect(self.table.insert_after_current_row)
-
-        try:
-            add_hotkey('tab', self.tab_add_row)
-        except ImportError as e:
-            print('''"Press Tab to add new line" cannot be implemented:''')
-            print(' keyboard:', *format_exception_only(e))
 
         self.ui.actionOpen.triggered.connect(self.open_file)
         self.ui.actionSave.triggered.connect(self.save_file)
@@ -49,23 +43,22 @@ class MainWindow(QMainWindow):
         self.current_file = None
 
         self.floors = []
-        self.ui.toolBox.removeItem(0)
+        self.ui.tabWidget_floors.removeTab(0)
         self.add_floor()
 
-    @Slot(tuple)
-    def display_area_sum(self, areas: tuple[Dec, Dec], txt_browsers: tuple[QTextBrowser, QTextBrowser, QTextBrowser]):
-        area_total, area_dw = areas
-        dwelling_widget, total_widget, economical_widget = txt_browsers
+    def connect_area_widgets(self, txt_browsers: tuple[QTextBrowser, QTextBrowser, QTextBrowser]):
+        total_widget, dwelling_widget, economical_widget = txt_browsers
 
-        area_ec = area_total - area_dw
+        @Slot(tuple)
+        def slot(areas: tuple[Dec, Dec]):
+            area_total, area_dw = areas
+            area_ec = area_total - area_dw
 
-        dwelling_widget.setText(str(area_dw))
-        total_widget.setText(str(area_total))
-        economical_widget.setText(str(area_ec))
+            dwelling_widget.setText(str(area_dw))
+            total_widget.setText(str(area_total))
+            economical_widget.setText(str(area_ec))
 
-    @Slot()    
-    def add_row(self):
-        self.table.rows += 1
+        return slot
     
     @Slot()
     def open_file(self):
@@ -116,23 +109,91 @@ class MainWindow(QMainWindow):
 
     @Slot()
     def add_floor(self):
-        i = self.ui.toolBox.count() + 1
-        self.floors.append(self.create_table(self.ui.toolBox.widget(self.ui.toolBox.addItem(QWidget(), QIcon(), f'Поверх {i}'))))
+        i = self.ui.tabWidget_floors.addTab(QWidget(), QIcon(), f'Поверх {len(self.floors)+1}')
+        self.floors.append(self.create_floor(i, self.ui.tabWidget_floors.widget(i)))
     
-    def create_table(self, parent: QWidget):
+    def create_floor(self, indx: int, parent: QWidget):
+        floor = []
+
+        font = QFont()
+        font.setPointSize(12)
+        font_bold = QFont()
+        font_bold.setPointSize(12)
+        font_bold.setBold(True)
+
+        # tableWidget
         table = QTableWidget(parent)
-
-        if (table.columnCount() < 6):
-            table.setColumnCount(6)
-
+        table.setColumnCount(6)
         for i in range(6):
             table.setHorizontalHeaderItem(i, QTableWidgetItem())
-    
-        table.setObjectName(f"tableWidget_{i}")
-        table.setGeometry(QRect(0, 0, 461, 411))
+        table.setObjectName(f"tableWidget_{indx}")
+        table.setGeometry(QRect(0, 0, 461, 291))
         table.horizontalHeader().setDefaultSectionSize(70)
+        table_obj = Table(table)
+        floor.append(table_obj)
+
+        # button_add_row
+        button_add_row = QPushButton(parent)
+        button_add_row.setObjectName(f"button_add_row_{indx}")
+        button_add_row.setGeometry(QRect(480, 0, 201, 25))
+        floor.append(button_add_row)
+
+        # button_insert_row
+        button_insert_row = QPushButton(parent)
+        button_insert_row.setObjectName(f"button_insert_row_{indx}")
+        button_insert_row.setGeometry(QRect(480, 30, 101, 25))
+        floor.append(button_insert_row)
+
+        # button_remove_row
+        button_remove_row = QPushButton(parent)
+        button_remove_row.setObjectName(f"button_remove_row_{indx}")
+        button_remove_row.setGeometry(QRect(580, 30, 101, 25))
+        floor.append(button_remove_row)
+
+        # label_S
+        label_S = QLabel(parent)
+        label_S.setObjectName(f"label_S_{indx}")
+        label_S.setGeometry(QRect(480, 130, 101, 31))
+        label_S.setFont(font_bold)
+        label_S.setAlignment(Qt.AlignCenter)
+        floor.append(label_S)
+
+        # label_Sdw
+        label_Sdw = QLabel(parent)
+        label_Sdw.setObjectName(f"label_Sdw_{indx}")
+        label_Sdw.setGeometry(QRect(480, 70, 101, 31))
+        label_Sdw.setFont(font)
+        label_Sdw.setAlignment(Qt.AlignCenter)
+        floor.append(label_Sdw)
+
+        # label_Sec
+        label_Sec = QLabel(parent)
+        label_Sec.setObjectName(f"label_Sec_{indx}")
+        label_Sec.setGeometry(QRect(480, 100, 101, 31))
+        label_Sec.setFont(font)
+        label_Sec.setAlignment(Qt.AlignCenter)
+        floor.append(label_Sec)
+
+        # area_total
+        area_total = QTextBrowser(parent)
+        area_total.setObjectName(f"area_total_{indx}")
+        area_total.setGeometry(QRect(590, 130, 91, 31))
+        floor.append(area_total)
+
+        # area_dwelling
+        area_dwelling = QTextBrowser(parent)
+        area_dwelling.setObjectName(f"area_dwelling_{indx}")
+        area_dwelling.setGeometry(QRect(590, 70, 91, 31))
+        floor.append(area_dwelling)
+
+        # area_economical
+        area_economical = QTextBrowser(parent)
+        area_economical.setObjectName(f"area_economical_{indx}")
+        area_economical.setGeometry(QRect(590, 100, 91, 31))
+        floor.append(area_economical)
 
 
+        # retranslateUi
         ___qtablewidgetitem = table.horizontalHeaderItem(0)
         ___qtablewidgetitem.setText(QCoreApplication.translate("MainWindow", u"\u0411\u0443\u043a\u0432\u0430", None))
         ___qtablewidgetitem1 = table.horizontalHeaderItem(1)
@@ -146,12 +207,46 @@ class MainWindow(QMainWindow):
         ___qtablewidgetitem5 = table.horizontalHeaderItem(5)
         ___qtablewidgetitem5.setText(QCoreApplication.translate("MainWindow", u"\u041e\u0431'\u0454\u043c", None))
 
+        button_add_row.setText(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0434\u0430\u0442\u0438 \u0440\u044f\u0434\u043e\u043a", None))
+        button_insert_row.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0441\u0442\u0430\u0432\u0438\u0442\u0438 \u0440\u044f\u0434\u043e\u043a", None))
+        button_remove_row.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0434\u0430\u043b\u0438\u0442\u0438 \u0440\u044f\u0434\u043e\u043a", None))
 
-        return table
+        label_S.setText(QCoreApplication.translate("MainWindow", u"S\u0437\u0430\u0433\u0430\u043b\u044c\u043d\u0430", None))
+        label_Sdw.setText(QCoreApplication.translate("MainWindow", u"S\u0436\u0438\u0442\u043b\u043e\u0432\u0430", None))
+        label_Sec.setText(QCoreApplication.translate("MainWindow", u"S\u0433\u043e\u0441\u043f", None))
 
-    def tab_add_row(self):
-        if self.table.rows and self.table.is_only_selected_item(self.table[-1][-1]):
-            self.add_row()
+        area_total.setHtml(QCoreApplication.translate("MainWindow", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"hr { height: 1px; border-width: 0; }\n"
+"li.unchecked::marker { content: \"\\2610\"; }\n"
+"li.checked::marker { content: \"\\2612\"; }\n"
+"</style></head><body style=\" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">0</p></body></html>", None))
+        area_dwelling.setHtml(QCoreApplication.translate("MainWindow", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"hr { height: 1px; border-width: 0; }\n"
+"li.unchecked::marker { content: \"\\2610\"; }\n"
+"li.checked::marker { content: \"\\2612\"; }\n"
+"</style></head><body style=\" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">0</p></body></html>", None))
+        area_economical.setHtml(QCoreApplication.translate("MainWindow", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"hr { height: 1px; border-width: 0; }\n"
+"li.unchecked::marker { content: \"\\2610\"; }\n"
+"li.checked::marker { content: \"\\2612\"; }\n"
+"</style></head><body style=\" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">0</p></body></html>", None))
+
+
+        table_obj.area_sum_changed.connect(self.connect_area_widgets((area_total, area_dwelling, area_economical)))
+        button_add_row.clicked.connect(table_obj.add_row)
+        button_insert_row.clicked.connect(table_obj.insert_after_current_row)
+        button_remove_row.clicked.connect(table_obj.remove_current_row)
+
+        return tuple(floor)
     
     def closeEvent(self, event):
         if self.ask_save() == 'Accept':
@@ -255,11 +350,17 @@ class Item(QTableWidgetItem):
 class Table(QObject):
     area_sum_changed = Signal(tuple)
 
-    def __init__(self, widget) -> None:
+    def __init__(self, widget: QTableWidget) -> None:
         super().__init__()
         self.__table = widget
         self.__table.itemChanged.connect(self.update)
         self.__table.itemSelectionChanged.connect(self.highlight_row)
+
+        try:
+            add_hotkey('tab', self.tab_add_row)
+        except ImportError as e:
+            print('''"Press Tab to add new line" cannot be implemented:''')
+            print(' keyboard:', *format_exception_only(e))
     
     def __getitem__(self, indx):
         if isinstance(indx, tuple):
@@ -292,6 +393,14 @@ class Table(QObject):
     def cols(self):
         return self.__table.columnCount()
     
+    @Slot()    
+    def add_row(self):
+        self.rows += 1
+
+    def tab_add_row(self):
+        if self.rows and self.is_only_selected_item(self[-1][-1]):
+            self.add_row()
+
     def fill_row(self, row):
         self.__table.itemChanged.disconnect(self.update)
 
