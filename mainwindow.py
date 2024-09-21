@@ -5,6 +5,7 @@ from decimal import Decimal as Dec
 from keyboard import add_hotkey
 from pyperclip import copy
 from openpyxl import Workbook
+from json import dump, load
 
 from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QFileDialog, QMessageBox, QWidget, QTableWidget, QTextBrowser, QPushButton, QLabel
 from PySide6.QtGui import QIcon, QColor, QBrush, QFont
@@ -70,18 +71,35 @@ class MainWindow(QMainWindow):
     def open_file(self):
         path = QFileDialog.getOpenFileName(parent=self, 
                                            caption="Відкрити", 
-                                           dir='save.csv', 
-                                           filter="Comma separated values (*.csv);;Всі файли (*.*)",
+                                           dir='save.json', 
+                                           filter="JavaScript Object Notation (*.json);;Всі файли (*.*)",
                                            )[0]
         if path:
             self.current_file = path
             self.setWindowTitle(self.current_file)
-            self.table.load_file(path)
+            
+            with open(path, 'rt', encoding='utf-8') as f:
+                table, *tables = load(f)
+                self.table.load(table)
+
+                for i in range(len(self.floors)):
+                    self.ui.tabWidget_floors.removeTab(i)
+                self.floors = []
+
+                for i in range(len(tables)):
+                    self.add_floor()
+                    self.floors[i][0].load(tables[i])
+
+
+
         
     @Slot()
     def save_file(self):
         if self.current_file:
-            self.table.write_file(self.current_file)
+            with open(self.current_file, 'wt', encoding='utf-8') as f:
+                tables = [self.table.get_matrix()]
+                tables = tables + [floor[0].get_matrix() for floor in self.floors]
+                dump(tuple(tables), f)
             return 'Success'
         else:
             return self.save_as_file()
@@ -90,13 +108,13 @@ class MainWindow(QMainWindow):
     def save_as_file(self):
         path = QFileDialog.getSaveFileName(parent=self, 
                                            caption="Зберегти як", 
-                                           dir='save.csv', 
-                                           filter="Comma separated values (*.csv);;Всі файли (*.*)",
+                                           dir='save.json', 
+                                           filter="JavaScript Object Notation (*.json);;Всі файли (*.*)",
                                            )[0]
         if path:
             self.current_file = path
             self.setWindowTitle(self.current_file)
-            self.table.write_file(path)
+            self.save_file()
             return 'Success'
         
     @Slot()
@@ -131,8 +149,6 @@ class MainWindow(QMainWindow):
         
         self.ui.area_dwelling_floor.setText(str(sum_dwelling))
         self.ui.area_economical_floor.setText(str(sum_economical))
-
-            
 
     def tab_add_row(self):
         table = self.current_table()
@@ -297,7 +313,7 @@ class MainWindow(QMainWindow):
     
     def ask_save(self):
         while True:
-            if self.current_file or self.table.rows:
+            if self.current_file or len(self.floors) != 1 or self.table.rows or self.floors[0][0].rows:
                 dlg = QMessageBox(self)
                 dlg.setWindowTitle("Збереження")
                 dlg.setText("Зберегти зміни?")
@@ -527,19 +543,16 @@ class Table(QObject):
                         self[row][col].setBackground(QColor(255, 240, 200))
                         self[row-1][col].setBackground(QColor(220, 255, 220))
 
-    def load_file(self, path):
-        with open(path, 'rt', encoding='utf-8') as f:
-            rows = tuple(row.split(',') for row in f.read().split('\n'))
-            self.rows = len(rows)
-            if rows:
-                for row in range(len(rows)):
-                    for col in range(len(rows[0])):
-                        self[row, col] = rows[row][col]
+    def load(self, matrix):
+        self.rows = len(matrix)
+        if matrix:
+            for row in range(len(matrix)):
+                for col in range(len(matrix[0])):
+                    self[row, col] = matrix[row][col]
 
 
-    def write_file(self, path):
-        with open(path, 'wt', encoding='utf-8') as f:
-            f.write('\n'.join(','.join(str(self[row, col]) for col in range(4)) for row in range(len(self))))
+    def get_matrix(self):
+        return tuple(tuple(str(self[row, col]) for col in range(self.cols))[:-2] for row in range(self.rows))
     
     def write_xlsx(self, path):
         wb = Workbook()
