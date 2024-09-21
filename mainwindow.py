@@ -5,10 +5,11 @@ from decimal import Decimal as Dec
 from keyboard import add_hotkey
 from pyperclip import copy
 from openpyxl import Workbook
+from time import sleep
 
 from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QFileDialog, QMessageBox, QWidget, QTableWidget, QTextBrowser, QPushButton, QLabel
 from PySide6.QtGui import QIcon, QColor, QBrush, QFont
-from PySide6.QtCore import Qt, Signal, Slot, QObject, QRect, QCoreApplication
+from PySide6.QtCore import Qt, Signal, Slot, QObject, QRect, QCoreApplication, QPoint, QItemSelectionModel
 
 # Important:
 # You need to run the following command to generate the ui_form.py file
@@ -37,6 +38,12 @@ class MainWindow(QMainWindow):
         self.ui.actionSave.triggered.connect(self.save_file)
         self.ui.actionSaveAs.triggered.connect(self.save_as_file)
         self.ui.actionExport.triggered.connect(self.export_xlsx)
+
+        try:
+            add_hotkey('tab', self.tab_add_row)
+        except ImportError as e:
+            print('''"Press Tab to add new line" cannot be implemented:''')
+            print(' keyboard:', *format_exception_only(e))
         
         self.ui.button_add_floor.clicked.connect(self.add_floor)
 
@@ -111,6 +118,24 @@ class MainWindow(QMainWindow):
     def add_floor(self):
         i = self.ui.tabWidget_floors.addTab(QWidget(), QIcon(), f'Поверх {len(self.floors)+1}')
         self.floors.append(self.create_floor(i, self.ui.tabWidget_floors.widget(i)))
+
+    def tab_add_row(self):
+        table = self.current_table()
+
+        if self.current_item() == table[-1][-1]:
+            table.add_row()
+    
+    def current_item(self):
+        table = self.current_table()
+        return table.selectedItems[0] if table.rows else None
+    
+    def current_table(self):
+        tab1 = self.ui.tabWidget.currentIndex()
+        tab2 = self.ui.tabWidget_floors.currentIndex()
+        if tab1 == 0:
+            return self.table
+        else:
+            return self.floors[tab2][0]
     
     def create_floor(self, indx: int, parent: QWidget):
         floor = []
@@ -355,12 +380,6 @@ class Table(QObject):
         self.__table = widget
         self.__table.itemChanged.connect(self.update)
         self.__table.itemSelectionChanged.connect(self.highlight_row)
-
-        try:
-            add_hotkey('tab', self.tab_add_row)
-        except ImportError as e:
-            print('''"Press Tab to add new line" cannot be implemented:''')
-            print(' keyboard:', *format_exception_only(e))
     
     def __getitem__(self, indx):
         if isinstance(indx, tuple):
@@ -393,13 +412,13 @@ class Table(QObject):
     def cols(self):
         return self.__table.columnCount()
     
+    @property
+    def selectedItems(self):
+        return self.__table.selectedItems()
+    
     @Slot()    
     def add_row(self):
         self.rows += 1
-
-    def tab_add_row(self):
-        if self.rows and self.is_only_selected_item(self[-1][-1]):
-            self.add_row()
 
     def fill_row(self, row):
         self.__table.itemChanged.disconnect(self.update)
@@ -458,7 +477,6 @@ class Table(QObject):
             self.count_volume()
             self.composite_area()
             self.sum_area()
-
         finally:
             self.__table.itemChanged.connect(self.update)
 
@@ -492,9 +510,6 @@ class Table(QObject):
                         self[row-1, col] = self[row-1][col].value + self[row][col].value
                         self[row][col].setBackground(QColor(255, 240, 200))
                         self[row-1][col].setBackground(QColor(220, 255, 220))
-
-    def is_only_selected_item(self, item):
-        return self.__table.selectedItems() == [item]
 
     def load_file(self, path):
         with open(path, 'rt', encoding='utf-8') as f:
