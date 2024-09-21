@@ -259,7 +259,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
      <attribute name="title">
       <string>Tab 2</string>
      </attribute>
-     <widget class="QLabel" name="label_Sec_2">
+     <widget class="QLabel" name="label_Sec_floor">
       <property name="geometry">
        <rect>
         <x>240</x>
@@ -280,7 +280,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
        <set>Qt::AlignCenter</set>
       </property>
      </widget>
-     <widget class="QLabel" name="label_S_2">
+     <widget class="QLabel" name="label_S_floor">
       <property name="geometry">
        <rect>
         <x>480</x>
@@ -302,7 +302,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
        <set>Qt::AlignCenter</set>
       </property>
      </widget>
-     <widget class="QTextBrowser" name="area_total_2">
+     <widget class="QTextBrowser" name="area_total_floor">
       <property name="geometry">
        <rect>
         <x>590</x>
@@ -322,7 +322,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;0&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
      </widget>
-     <widget class="QTextBrowser" name="area_economical_2">
+     <widget class="QTextBrowser" name="area_economical_floor">
       <property name="geometry">
        <rect>
         <x>350</x>
@@ -342,7 +342,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;0&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
      </widget>
-     <widget class="QTextBrowser" name="area_dwelling_2">
+     <widget class="QTextBrowser" name="area_dwelling_floor">
       <property name="geometry">
        <rect>
         <x>120</x>
@@ -362,7 +362,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;0&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
      </widget>
-     <widget class="QLabel" name="label_Sdw_2">
+     <widget class="QLabel" name="label_Sdw_floor">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -620,12 +620,12 @@ li.checked::marker { content: &quot;\2612&quot;; }
        </widget>
       </widget>
      </widget>
-     <zorder>area_economical_2</zorder>
-     <zorder>area_total_2</zorder>
-     <zorder>area_dwelling_2</zorder>
-     <zorder>label_S_2</zorder>
-     <zorder>label_Sdw_2</zorder>
-     <zorder>label_Sec_2</zorder>
+     <zorder>area_economical_floor</zorder>
+     <zorder>area_total_floor</zorder>
+     <zorder>area_dwelling_floor</zorder>
+     <zorder>label_S_floor</zorder>
+     <zorder>label_Sdw_floor</zorder>
+     <zorder>label_Sec_floor</zorder>
      <zorder>button_add_floor</zorder>
      <zorder>tabWidget_floors</zorder>
     </widget>

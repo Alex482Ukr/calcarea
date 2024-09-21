@@ -5,11 +5,10 @@ from decimal import Decimal as Dec
 from keyboard import add_hotkey
 from pyperclip import copy
 from openpyxl import Workbook
-from time import sleep
 
 from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QFileDialog, QMessageBox, QWidget, QTableWidget, QTextBrowser, QPushButton, QLabel
 from PySide6.QtGui import QIcon, QColor, QBrush, QFont
-from PySide6.QtCore import Qt, Signal, Slot, QObject, QRect, QCoreApplication, QPoint, QItemSelectionModel
+from PySide6.QtCore import Qt, Signal, Slot, QObject, QRect, QCoreApplication
 
 # Important:
 # You need to run the following command to generate the ui_form.py file
@@ -121,8 +120,18 @@ class MainWindow(QMainWindow):
     
     @Slot(tuple)
     def sum_floors(self, areas: tuple):
+        sum_total, sum_dwelling, sum_economical = [Dec('0')]*3
+
         for floor in self.floors:
-            total, dwelling, economical = floor[-3:]
+            total_widget, dwelling_widget, economical_widget = floor[-3:]
+            sum_total += Dec(total_widget.toPlainText())
+            sum_dwelling += Dec(dwelling_widget.toPlainText())
+            sum_economical += Dec(economical_widget.toPlainText())
+        self.ui.area_total_floor.setText(str(sum_total))
+        
+        self.ui.area_dwelling_floor.setText(str(sum_dwelling))
+        self.ui.area_economical_floor.setText(str(sum_economical))
+
             
 
     def tab_add_row(self):

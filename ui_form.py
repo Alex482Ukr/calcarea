@@ -107,30 +107,30 @@ class Ui_MainWindow(object):
         self.tabWidget.addTab(self.tab, "")
         self.tab_2 = QWidget()
         self.tab_2.setObjectName(u"tab_2")
-        self.label_Sec_2 = QLabel(self.tab_2)
-        self.label_Sec_2.setObjectName(u"label_Sec_2")
-        self.label_Sec_2.setGeometry(QRect(240, 380, 101, 31))
-        self.label_Sec_2.setFont(font)
-        self.label_Sec_2.setAlignment(Qt.AlignCenter)
-        self.label_S_2 = QLabel(self.tab_2)
-        self.label_S_2.setObjectName(u"label_S_2")
-        self.label_S_2.setGeometry(QRect(480, 380, 101, 31))
-        self.label_S_2.setFont(font1)
-        self.label_S_2.setAlignment(Qt.AlignCenter)
-        self.area_total_2 = QTextBrowser(self.tab_2)
-        self.area_total_2.setObjectName(u"area_total_2")
-        self.area_total_2.setGeometry(QRect(590, 380, 91, 31))
-        self.area_economical_2 = QTextBrowser(self.tab_2)
-        self.area_economical_2.setObjectName(u"area_economical_2")
-        self.area_economical_2.setGeometry(QRect(350, 380, 91, 31))
-        self.area_dwelling_2 = QTextBrowser(self.tab_2)
-        self.area_dwelling_2.setObjectName(u"area_dwelling_2")
-        self.area_dwelling_2.setGeometry(QRect(120, 380, 91, 31))
-        self.label_Sdw_2 = QLabel(self.tab_2)
-        self.label_Sdw_2.setObjectName(u"label_Sdw_2")
-        self.label_Sdw_2.setGeometry(QRect(10, 380, 101, 31))
-        self.label_Sdw_2.setFont(font)
-        self.label_Sdw_2.setAlignment(Qt.AlignCenter)
+        self.label_Sec_floor = QLabel(self.tab_2)
+        self.label_Sec_floor.setObjectName(u"label_Sec_floor")
+        self.label_Sec_floor.setGeometry(QRect(240, 380, 101, 31))
+        self.label_Sec_floor.setFont(font)
+        self.label_Sec_floor.setAlignment(Qt.AlignCenter)
+        self.label_S_floor = QLabel(self.tab_2)
+        self.label_S_floor.setObjectName(u"label_S_floor")
+        self.label_S_floor.setGeometry(QRect(480, 380, 101, 31))
+        self.label_S_floor.setFont(font1)
+        self.label_S_floor.setAlignment(Qt.AlignCenter)
+        self.area_total_floor = QTextBrowser(self.tab_2)
+        self.area_total_floor.setObjectName(u"area_total_floor")
+        self.area_total_floor.setGeometry(QRect(590, 380, 91, 31))
+        self.area_economical_floor = QTextBrowser(self.tab_2)
+        self.area_economical_floor.setObjectName(u"area_economical_floor")
+        self.area_economical_floor.setGeometry(QRect(350, 380, 91, 31))
+        self.area_dwelling_floor = QTextBrowser(self.tab_2)
+        self.area_dwelling_floor.setObjectName(u"area_dwelling_floor")
+        self.area_dwelling_floor.setGeometry(QRect(120, 380, 91, 31))
+        self.label_Sdw_floor = QLabel(self.tab_2)
+        self.label_Sdw_floor.setObjectName(u"label_Sdw_floor")
+        self.label_Sdw_floor.setGeometry(QRect(10, 380, 101, 31))
+        self.label_Sdw_floor.setFont(font)
+        self.label_Sdw_floor.setAlignment(Qt.AlignCenter)
         self.button_add_floor = QPushButton(self.tab_2)
         self.button_add_floor.setObjectName(u"button_add_floor")
         self.button_add_floor.setGeometry(QRect(10, 340, 151, 25))
@@ -192,12 +192,12 @@ class Ui_MainWindow(object):
         self.label_Sec_n.setAlignment(Qt.AlignCenter)
         self.tabWidget_floors.addTab(self.tab_n, "")
         self.tabWidget.addTab(self.tab_2, "")
-        self.area_economical_2.raise_()
-        self.area_total_2.raise_()
-        self.area_dwelling_2.raise_()
-        self.label_S_2.raise_()
-        self.label_Sdw_2.raise_()
-        self.label_Sec_2.raise_()
+        self.area_economical_floor.raise_()
+        self.area_total_floor.raise_()
+        self.area_dwelling_floor.raise_()
+        self.label_S_floor.raise_()
+        self.label_Sdw_floor.raise_()
+        self.label_Sec_floor.raise_()
         self.button_add_floor.raise_()
         self.tabWidget_floors.raise_()
         MainWindow.setCentralWidget(self.centralwidget)
@@ -281,9 +281,9 @@ class Ui_MainWindow(object):
         self.label_Sdw.setText(QCoreApplication.translate("MainWindow", u"S\u0436\u0438\u0442\u043b\u043e\u0432\u0430", None))
         self.button_remove_row.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0434\u0430\u043b\u0438\u0442\u0438 \u0440\u044f\u0434\u043e\u043a", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QCoreApplication.translate("MainWindow", u"Tab 1", None))
-        self.label_Sec_2.setText(QCoreApplication.translate("MainWindow", u"S\u0433\u043e\u0441\u043f", None))
-        self.label_S_2.setText(QCoreApplication.translate("MainWindow", u"S\u0437\u0430\u0433\u0430\u043b\u044c\u043d\u0430", None))
-        self.area_total_2.setHtml(QCoreApplication.translate("MainWindow", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+        self.label_Sec_floor.setText(QCoreApplication.translate("MainWindow", u"S\u0433\u043e\u0441\u043f", None))
+        self.label_S_floor.setText(QCoreApplication.translate("MainWindow", u"S\u0437\u0430\u0433\u0430\u043b\u044c\u043d\u0430", None))
+        self.area_total_floor.setHtml(QCoreApplication.translate("MainWindow", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "hr { height: 1px; border-width: 0; }\n"
@@ -291,7 +291,7 @@ class Ui_MainWindow(object):
 "li.checked::marker { content: \"\\2612\"; }\n"
 "</style></head><body style=\" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">0</p></body></html>", None))
-        self.area_economical_2.setHtml(QCoreApplication.translate("MainWindow", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+        self.area_economical_floor.setHtml(QCoreApplication.translate("MainWindow", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "hr { height: 1px; border-width: 0; }\n"
@@ -299,7 +299,7 @@ class Ui_MainWindow(object):
 "li.checked::marker { content: \"\\2612\"; }\n"
 "</style></head><body style=\" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">0</p></body></html>", None))
-        self.area_dwelling_2.setHtml(QCoreApplication.translate("MainWindow", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+        self.area_dwelling_floor.setHtml(QCoreApplication.translate("MainWindow", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "hr { height: 1px; border-width: 0; }\n"
@@ -307,7 +307,7 @@ class Ui_MainWindow(object):
 "li.checked::marker { content: \"\\2612\"; }\n"
 "</style></head><body style=\" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">0</p></body></html>", None))
-        self.label_Sdw_2.setText(QCoreApplication.translate("MainWindow", u"S\u0436\u0438\u0442\u043b\u043e\u0432\u0430", None))
+        self.label_Sdw_floor.setText(QCoreApplication.translate("MainWindow", u"S\u0436\u0438\u0442\u043b\u043e\u0432\u0430", None))
         self.button_add_floor.setText(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0434\u0430\u0442\u0438 \u043f\u043e\u0432\u0435\u0440\u0445", None))
         self.button_remove_row_n.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0434\u0430\u043b\u0438\u0442\u0438 \u0440\u044f\u0434\u043e\u043a", None))
         ___qtablewidgetitem6 = self.tableWidget_n.horizontalHeaderItem(0)
