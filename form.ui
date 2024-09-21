@@ -46,7 +46,7 @@
     </property>
     <widget class="QWidget" name="tab">
      <attribute name="title">
-      <string>Tab 1</string>
+      <string>Ділянка</string>
      </attribute>
      <widget class="QTableWidget" name="tableWidget">
       <property name="geometry">
@@ -257,7 +257,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
     </widget>
     <widget class="QWidget" name="tab_2">
      <attribute name="title">
-      <string>Tab 2</string>
+      <string>Внутрішня площа</string>
      </attribute>
      <widget class="QLabel" name="label_Sec_floor">
       <property name="geometry">
@@ -388,7 +388,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
        <rect>
         <x>10</x>
         <y>340</y>
-        <width>151</width>
+        <width>141</width>
         <height>25</height>
        </rect>
       </property>
@@ -410,7 +410,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
       </property>
       <widget class="QWidget" name="tab_n">
        <attribute name="title">
-        <string>Tab 1</string>
+        <string>Поверх n</string>
        </attribute>
        <widget class="QPushButton" name="button_remove_row_n">
         <property name="geometry">
@@ -620,6 +620,32 @@ li.checked::marker { content: &quot;\2612&quot;; }
        </widget>
       </widget>
      </widget>
+     <widget class="QPushButton" name="button_remove_floor">
+      <property name="geometry">
+       <rect>
+        <x>310</x>
+        <y>340</y>
+        <width>141</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Видалити поверх</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="button_insert_floor">
+      <property name="geometry">
+       <rect>
+        <x>160</x>
+        <y>340</y>
+        <width>141</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Вставити поверх</string>
+      </property>
+     </widget>
      <zorder>area_economical_floor</zorder>
      <zorder>area_total_floor</zorder>
      <zorder>area_dwelling_floor</zorder>
@@ -628,6 +654,8 @@ li.checked::marker { content: &quot;\2612&quot;; }
      <zorder>label_Sec_floor</zorder>
      <zorder>button_add_floor</zorder>
      <zorder>tabWidget_floors</zorder>
+     <zorder>button_remove_floor</zorder>
+     <zorder>button_insert_floor</zorder>
     </widget>
    </widget>
   </widget>
@@ -674,8 +702,14 @@ li.checked::marker { content: &quot;\2612&quot;; }
    </property>
   </action>
   <action name="actionExport">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Експортувати в Excel</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
  </widget>

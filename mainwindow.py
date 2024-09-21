@@ -37,7 +37,7 @@ class MainWindow(QMainWindow):
         self.ui.actionOpen.triggered.connect(self.open_file)
         self.ui.actionSave.triggered.connect(self.save_file)
         self.ui.actionSaveAs.triggered.connect(self.save_as_file)
-        self.ui.actionExport.triggered.connect(self.export_xlsx)
+        self.ui.actionExport.triggered.connect(self.export_xlsx)  # not used
 
         try:
             add_hotkey('tab', self.tab_add_row)
@@ -46,12 +46,13 @@ class MainWindow(QMainWindow):
             print(' keyboard:', *format_exception_only(e))
         
         self.ui.button_add_floor.clicked.connect(self.add_floor)
+        self.ui.button_remove_floor.clicked.connect(self.remove_floor)
+        self.ui.button_insert_floor.clicked.connect(self.insert_floor)
 
         self.current_file = None
 
         self.floors = []
         self.ui.tabWidget_floors.removeTab(0)
-        self.add_floor()
 
     def connect_area_widgets(self, txt_browsers: tuple[QTextBrowser, QTextBrowser, QTextBrowser]):
         total_widget, dwelling_widget, economical_widget = txt_browsers
@@ -133,8 +134,26 @@ class MainWindow(QMainWindow):
 
     @Slot()
     def add_floor(self):
-        i = self.ui.tabWidget_floors.addTab(QWidget(), QIcon(), f'Поверх {len(self.floors)+1}')
-        self.floors.append(self.create_floor(i, self.ui.tabWidget_floors.widget(i)))
+        i = len(self.floors)
+        self.floors.append(self.create_floor(i))
+    
+    @Slot()
+    def remove_floor(self):
+        i = self.ui.tabWidget_floors.currentIndex()
+        if i != -1:
+            self.ui.tabWidget_floors.removeTab(i)
+            del self.floors[i]
+            self.enumerate_floors()
+    
+    @Slot()
+    def insert_floor(self):
+        i = self.ui.tabWidget_floors.currentIndex()+1
+        self.floors.insert(i, self.create_floor(i))
+        self.enumerate_floors()
+
+    def enumerate_floors(self):
+        for i in range(len(self.floors)):
+            self.ui.tabWidget_floors.setTabText(i, f"Поверх {i+1}")
     
     @Slot(tuple)
     def sum_floors(self, areas: tuple):
@@ -168,7 +187,9 @@ class MainWindow(QMainWindow):
         else:
             return self.floors[tab2][0]
     
-    def create_floor(self, indx: int, parent: QWidget):
+    def create_floor(self, indx: int):
+        self.ui.tabWidget_floors.insertTab(indx, QWidget(), QIcon(), f'Поверх {indx+1}')
+        parent = self.ui.tabWidget_floors.widget(indx)
         floor = []
 
         font = QFont()
@@ -185,8 +206,8 @@ class MainWindow(QMainWindow):
         table.setObjectName(f"tableWidget_{indx}")
         table.setGeometry(QRect(0, 0, 461, 291))
         table.horizontalHeader().setDefaultSectionSize(70)
+        table.show()
         table_obj = Table(table)
-        floor.append(table_obj)
 
         # button_add_row
         button_add_row = QPushButton(parent)
@@ -303,6 +324,10 @@ class MainWindow(QMainWindow):
         button_insert_row.clicked.connect(table_obj.insert_after_current_row)
         button_remove_row.clicked.connect(table_obj.remove_current_row)
 
+        for widget in floor:
+            widget.show()
+
+        floor.insert(0, table_obj)
         return tuple(floor)
     
     def closeEvent(self, event):
