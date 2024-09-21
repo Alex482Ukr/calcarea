@@ -90,9 +90,6 @@ class MainWindow(QMainWindow):
                 for i in range(len(tables)):
                     self.add_floor()
                     self.floors[i][0].load(tables[i])
-
-
-
         
     @Slot()
     def save_file(self):
