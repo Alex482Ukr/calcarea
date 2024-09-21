@@ -118,6 +118,12 @@ class MainWindow(QMainWindow):
     def add_floor(self):
         i = self.ui.tabWidget_floors.addTab(QWidget(), QIcon(), f'Поверх {len(self.floors)+1}')
         self.floors.append(self.create_floor(i, self.ui.tabWidget_floors.widget(i)))
+    
+    @Slot(tuple)
+    def sum_floors(self, areas: tuple):
+        for floor in self.floors:
+            total, dwelling, economical = floor[-3:]
+            
 
     def tab_add_row(self):
         table = self.current_table()
@@ -267,6 +273,7 @@ class MainWindow(QMainWindow):
 
 
         table_obj.area_sum_changed.connect(self.connect_area_widgets((area_total, area_dwelling, area_economical)))
+        table_obj.area_sum_changed.connect(self.sum_floors)
         button_add_row.clicked.connect(table_obj.add_row)
         button_insert_row.clicked.connect(table_obj.insert_after_current_row)
         button_remove_row.clicked.connect(table_obj.remove_current_row)
