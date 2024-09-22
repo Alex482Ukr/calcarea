@@ -86,23 +86,33 @@ class MainWindow(QMainWindow):
         path = QFileDialog.getOpenFileName(parent=self, 
                                            caption="Відкрити", 
                                            dir='save.json', 
-                                           filter="JavaScript Object Notation (*.json);;Всі файли (*.*)",
+                                           filter="JavaScript Object Notation (*.json);;Comma Separated Values (*.csv);;Всі файли (*.*)",
                                            )[0]
         if path:
-            self.current_file = path
-            self.setWindowTitle(self.current_file)
-            
-            with open(path, 'rt', encoding='utf-8') as f:
-                table, *tables = load(f)
-                self.table.load(table)
+            if path.endswith('.csv'):   # For old save format support
+                with open(path, 'rt', encoding='utf-8') as f:
+                    rows = tuple(row.split(',') for row in f.read().split('\n'))
+                    self.table.rows = len(rows)
+                    if rows:
+                        for row in range(len(rows)):
+                            for col in range(len(rows[0])):
+                                self.table[row, col] = rows[row][col]
+                self.save_as_file()     # Resave with new format
+            else:
+                self.current_file = path
+                self.setWindowTitle(self.current_file)
 
-                for i in range(len(self.floors)):
-                    self.ui.tabWidget_floors.removeTab(i)
-                self.floors = []
+                with open(path, 'rt', encoding='utf-8') as f:
+                    table, *tables = load(f)
+                    self.table.load(table)
 
-                for i in range(len(tables)):
-                    self.add_floor()
-                    self.floors[i][0].load(tables[i])
+                    for i in range(len(self.floors)):
+                        self.ui.tabWidget_floors.removeTab(i)
+                    self.floors = []
+
+                    for i in range(len(tables)):
+                        self.add_floor()
+                        self.floors[i][0].load(tables[i])
         
     @Slot()
     def save_file(self) -> str:
