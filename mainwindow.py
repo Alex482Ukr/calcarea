@@ -6,6 +6,7 @@ from keyboard import add_hotkey
 from pyperclip import copy
 from openpyxl import Workbook
 from json import dump, load
+from os.path import exists
 
 from typing import Any, Iterator, Iterable
 from types import FunctionType
@@ -64,6 +65,12 @@ class MainWindow(QMainWindow):
         self.floors = []
         self.ui.tabWidget_floors.removeTab(0)   # Removing first demo tab (Floor n)
 
+        # Open with this program
+        if len(sys.argv) > 1:
+            file = sys.argv[1]
+            if exists(file):
+                self.open_file(path=file)
+
     def connect_area_widgets(self, txt_browsers: tuple[QTextBrowser, QTextBrowser, QTextBrowser]) -> FunctionType:
         '''Returns a Slot that displays given areas in connected text browsers'''
         total_widget, dwelling_widget, economical_widget = txt_browsers
@@ -80,14 +87,15 @@ class MainWindow(QMainWindow):
         return slot
     
     @Slot()
-    def open_file(self) -> None:
+    def open_file(self, path=None) -> None:
         '''Load tables from file'''
 
-        path = QFileDialog.getOpenFileName(parent=self, 
-                                           caption="Відкрити", 
-                                           dir='save.json', 
-                                           filter="JavaScript Object Notation (*.json);;Comma Separated Values (*.csv);;Всі файли (*.*)",
-                                           )[0]
+        if not path:
+            path = QFileDialog.getOpenFileName(parent=self, 
+                                            caption="Відкрити", 
+                                            dir='save.json', 
+                                            filter="JavaScript Object Notation (*.json);;Comma Separated Values (*.csv);;Всі файли (*.*)",
+                                            )[0]
         if path:
             if path.endswith('.csv'):   # For old save format support
                 with open(path, 'rt', encoding='utf-8') as f:
@@ -379,7 +387,7 @@ class MainWindow(QMainWindow):
         '''Saving dialog'''
 
         while True:
-            if self.current_file or len(self.floors) != 1 or self.table.rows or self.floors[0][0].rows:
+            if self.current_file or len(self.floors) != 0 or self.table.rows:
                 dlg = QMessageBox(self)
                 dlg.setWindowTitle("Збереження")
                 dlg.setText("Зберегти зміни?")
