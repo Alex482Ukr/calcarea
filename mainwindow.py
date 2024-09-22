@@ -7,7 +7,8 @@ from pyperclip import copy
 from openpyxl import Workbook
 from json import dump, load
 
-from typing import Iterable, Any, Iterator
+from typing import Any, Iterator, Iterable
+from types import FunctionType
 
 from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidget, QTableWidgetItem, QFileDialog, QMessageBox, QWidget, QTableWidget, QTextBrowser, QPushButton, QLabel
 from PySide6.QtGui import QIcon, QColor, QBrush, QCloseEvent, QFont
@@ -38,11 +39,13 @@ class MainWindow(QMainWindow):
         self.ui.button_remove_row.clicked.connect(self.table.remove_current_row)
         self.ui.button_insert_row.clicked.connect(self.table.insert_after_current_row)
 
+        # Setting up actions
         self.ui.actionOpen.triggered.connect(self.open_file)
         self.ui.actionSave.triggered.connect(self.save_file)
         self.ui.actionSaveAs.triggered.connect(self.save_as_file)
         self.ui.actionExport.triggered.connect(self.export_xlsx)  # not used
 
+        # Implementing 'Tab' to add new row
         try:
             add_hotkey('tab', self.tab_add_row)
         except ImportError as e:    # You must be root to use this library on linux.
@@ -56,30 +59,29 @@ class MainWindow(QMainWindow):
         # Current file you are working on, must be a path (full or relative)
         self.current_file = None
 
+        # List of floors: 
+        # list(tuple(Table, button_add_row, button_insert_row, button_remove_row, label_S, label_Sdw, label_Sec, area_total, area_dwelling, area_economical), ...)
         self.floors = []
-        self.ui.tabWidget_floors.removeTab(0)
+        self.ui.tabWidget_floors.removeTab(0)   # Removing first demo tab (Floor n)
 
-    def connect_area_widgets(self, txt_browsers: tuple[QTextBrowser, QTextBrowser, QTextBrowser]):
+    def connect_area_widgets(self, txt_browsers: tuple[QTextBrowser, QTextBrowser, QTextBrowser]) -> FunctionType:
+        '''Returns a Slot that displays given areas in connected text browsers'''
         total_widget, dwelling_widget, economical_widget = txt_browsers
 
         @Slot(tuple)
-        def slot(areas: tuple[Dec, Dec]):
+        def slot(areas: tuple[Dec, Dec]) -> None:
+            '''Displays given areas in connected text browsers'''
             area_total, area_dw = areas
             area_ec = area_total - area_dw
 
             dwelling_widget.setText(str(area_dw))
             total_widget.setText(str(area_total))
             economical_widget.setText(str(area_ec))
-
         return slot
-    @Slot()    
-    def add_row(self) -> None:
-        '''Adds a new row in table widget'''
-        self.table.rows += 1
     
     @Slot()
     def open_file(self) -> None:
-        '''Ask filename to open file'''
+        '''Load tables from file'''
 
         path = QFileDialog.getOpenFileName(parent=self, 
                                            caption="Відкрити", 
@@ -103,8 +105,8 @@ class MainWindow(QMainWindow):
                     self.floors[i][0].load(tables[i])
         
     @Slot()
-    def save_file(self) -> None:
-        '''Ask filename to save in that file'''
+    def save_file(self) -> str:
+        '''Save tables in the current file'''
 
         if self.current_file:
             with open(self.current_file, 'wt', encoding='utf-8') as f:
@@ -116,8 +118,8 @@ class MainWindow(QMainWindow):
             return self.save_as_file()
 
     @Slot()
-    def save_as_file(self) -> None:
-        '''Ask filename to save as a file'''
+    def save_as_file(self) -> str:
+        '''Save tables as a file'''
 
         path = QFileDialog.getSaveFileName(parent=self, 
                                            caption="Зберегти як", 
@@ -146,12 +148,14 @@ class MainWindow(QMainWindow):
             self.table.write_xlsx(path)
 
     @Slot()
-    def add_floor(self):
+    def add_floor(self) -> None:
+        '''Adding new floor'''
         i = len(self.floors)
         self.floors.append(self.create_floor(i))
     
     @Slot()
     def remove_floor(self):
+        '''Deleting current floor'''
         i = self.ui.tabWidget_floors.currentIndex()
         if i != -1:
             self.ui.tabWidget_floors.removeTab(i)
@@ -160,16 +164,19 @@ class MainWindow(QMainWindow):
     
     @Slot()
     def insert_floor(self):
+        '''Inserting new floor after current'''
         i = self.ui.tabWidget_floors.currentIndex()+1
         self.floors.insert(i, self.create_floor(i))
         self.enumerate_floors()
 
-    def enumerate_floors(self):
+    def enumerate_floors(self) -> None:
+        '''Reset numberation of floors'''
         for i in range(len(self.floors)):
             self.ui.tabWidget_floors.setTabText(i, f"Поверх {i+1}")
     
     @Slot(tuple)
     def sum_floors(self, areas: tuple):
+        '''Displaying area sum for all floors'''
         sum_total, sum_dwelling, sum_economical = [Dec('0')]*3
 
         for floor in self.floors:
@@ -184,17 +191,20 @@ class MainWindow(QMainWindow):
 
     def tab_add_row(self) -> None:
         '''Adds a new line in a table if Tab is pressed on the last item'''
-
         table = self.current_table()
 
         if self.current_item() == table[-1][-1]:
             table.add_row()
     
-    def current_item(self):
+    def current_item(self) -> QTableWidgetItem | None:
+        '''Returns first currently selected item'''
+
         table = self.current_table()
         return table.selectedItems[0] if table.rows else None
     
-    def current_table(self):
+    def current_table(self) -> QTableWidget:
+        '''Returns current table'''
+
         tab1 = self.ui.tabWidget.currentIndex()
         tab2 = self.ui.tabWidget_floors.currentIndex()
         if tab1 == 0:
@@ -202,7 +212,9 @@ class MainWindow(QMainWindow):
         else:
             return self.floors[tab2][0]
     
-    def create_floor(self, indx: int):
+    def create_floor(self, indx: int) -> tuple[QTableWidget, QPushButton, QPushButton, QPushButton, QLabel, QLabel, QLabel, QTextBrowser, QTextBrowser, QTextBrowser]:
+        '''Creates new floor'''
+
         self.ui.tabWidget_floors.insertTab(indx, QWidget(), QIcon(), f'Поверх {indx+1}')
         parent = self.ui.tabWidget_floors.widget(indx)
         floor = []
@@ -377,7 +389,7 @@ class MainWindow(QMainWindow):
                 
 
 class Item(QTableWidgetItem):
-    def __init__(self, value_type, value=None, rounding=None, *args, **kwargs):
+    def __init__(self, value_type, value=None, rounding=None, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.value_type = value_type
         self.rounding = rounding
@@ -389,25 +401,28 @@ class Item(QTableWidgetItem):
 
         self.setText(str(value))   
 
-    def __str__(self):
+    def __str__(self) -> str:
+        '''Return text of the item'''
         return str(self.text())
 
-    def __add__(self, other):
+    def __add__(self, other) -> str | Dec:
+        '''Add values of two Items'''
         if self.value_type != other.value_type:
             raise TypeError(f'Items value types not matching: {self.value_type} and {other.value_type}')
         return self.text() + other.text()
 
     @property
-    def editable(self):
+    def editable(self) -> bool:
         return Qt.ItemIsEditable in self.flags()
     @editable.setter
-    def editable(self, flag):
+    def editable(self, flag) -> None:
         if flag:
             self.setFlags(self.flags() | Qt.ItemIsEditable)
         else:
             self.setFlags(self.flags() & ~Qt.ItemIsEditable)
     
-    def setText(self, text):
+    def setText(self, text: Any) -> None:
+        '''Setting text of the item'''
         text = self.verify_value(text)
         self.value = text
 
@@ -416,24 +431,24 @@ class Item(QTableWidgetItem):
 
         super().setText(str(text))
     
-    def set_raw_text(self, text):
+    def set_raw_text(self, text: Any) -> None:
+        '''Setting text directly'''
         super().setText(str(text))
     
-    def text(self):
+    def text(self) -> str | Dec:
         text = self.verify_value(super().text())
-
         if not text:
             self.setText(self.default)
             return self.default
-        
         return text
     
     @staticmethod
-    def round(num, rounding):
-        num += Dec('0.000000001')
+    def round(num: Dec, rounding: int) -> Dec:
+        '''Rounding to the given number of decimal places'''
+        num += Dec('0.000000001')   # 0.5 rounding to 1
         return round(num, rounding)
     
-    def verify_value(self, value):
+    def verify_value(self, value: Any) -> Any:
         if not value:
             value = self.default
         else:
@@ -449,7 +464,8 @@ class Item(QTableWidgetItem):
 
 
 class Table(QObject):
-    area_sum_changed = Signal(tuple)
+    '''An interface to operate QTableWidgets'''
+    area_sum_changed = Signal(tuple)    # Signal emitted when area sums are changed
 
     def __init__(self, widget: QTableWidget) -> None:
         super().__init__()
@@ -457,7 +473,11 @@ class Table(QObject):
         self.__table.itemChanged.connect(self.update)
         self.__table.itemSelectionChanged.connect(self.highlight_row)
     
-    def __getitem__(self, indx):
+    def __getitem__(self, indx: int | Iterable[int] | Item) -> tuple[Item] | (str | Dec) | tuple[int, int]:
+        '''Return row by given index
+        or return item text by given tuple of item coordinates
+        or return tuple of item coordinates of given item object'''
+
         if isinstance(indx, tuple):
             return self.__table.item(*indx).text()
         if isinstance(indx, Item):
@@ -465,55 +485,72 @@ class Table(QObject):
             return item.row(), item.column()
         return tuple(row for row in self)[indx]
 
-    def __setitem__(self, indx, value):
+    def __setitem__(self, indx: Iterable[int], value: Any) -> None:
+        '''Setting text of item with given coordinates'''
         self.__table.item(*indx).setText(value)
     
-    def __len__(self):
+    def __len__(self) -> int:
+        '''Returns amount of rows in the table'''
         return self.rows
     
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Item]:
+        '''Returns iterator of Item objects in the table'''
         return iter(tuple(tuple(self.__table.item(row, col) for col in range(self.cols)) for row in range(self.rows)))
     
     @property
-    def rows(self):
+    def rows(self) -> int:
+        '''Amount of table rows getter'''
         return self.__table.rowCount()
     @rows.setter
-    def rows(self, num):
+    def rows(self, num: int) -> None:
+        '''Setting amount of rows in the table
+        by removing or adding new rows'''
+
         filled_rows = self.rows
         self.__table.setRowCount(num)
         for row in range(filled_rows, self.rows):
             self.fill_row(row)
     
     @property
-    def cols(self):
+    def cols(self) -> int:
+        '''Amount of table columns getter'''
         return self.__table.columnCount()
     
     @property
-    def selectedItems(self):
+    def selectedItems(self) -> list[Item]:
+        '''List of selected items getter'''
         return self.__table.selectedItems()
     
     @Slot()    
-    def add_row(self):
+    def add_row(self) -> None:
+        '''Adding row to the table'''
         self.rows += 1
 
-    def fill_row(self, row):
+    def fill_row(self, row: int) -> None:
+        '''Filling row with items with default values'''
+
+        # Temporary disconnecting table updates 
+        # to prevent huge amount of errors while filling row
         self.__table.itemChanged.disconnect(self.update)
 
-        self.__table.setItem(row, 0, Item(str, 'A'))
+        self.__table.setItem(row, 0, Item(str, 'A'))    # Filling "Letter" column
 
-        for col in range(1, 4):
+        for col in range(1, 4): # Filling "Width", "Length" and "Height" columns with rounding to hundredths
             self.__table.setItem(row, col, Item(Dec, rounding=2))
         
-        self.__table.setItem(row, 4, Item(Dec, rounding=1))
-        self.__table.setItem(row, 5, Item(Dec, rounding=0))
+        self.__table.setItem(row, 4, Item(Dec, rounding=1)) # Filling "Area" column with rounding to tenths
+        self.__table.setItem(row, 5, Item(Dec, rounding=0)) # Filling "Volume" column with rounding to whole numbers
 
-        for col in (4, 5):
+        for col in (4, 5):   # Setting "Area" and "Volume" columns to not editable
             self[row][col].editable = False
 
+        # Turns table updates back ON
         self.__table.itemChanged.connect(self.update)
 
     @Slot()
-    def remove_current_row(self):
+    def remove_current_row(self) -> None:
+        '''Deleting selected row'''
+
         items = list(map(lambda item: self[item], self.__table.selectedItems()))
         for row in map(lambda item: item[0], items):
             self.__table.removeRow(row)
@@ -524,7 +561,8 @@ class Table(QObject):
                 self[item[0]][item[1]].setSelected(True)
 
     @Slot()
-    def insert_after_current_row(self):
+    def insert_after_current_row(self) -> None:
+        '''Inserts an empty row after the selected one'''
         rows = list(map(lambda item: self[item][0], self.__table.selectedItems()))
         if rows:
             self.__table.insertRow(rows[0]+1)
@@ -532,62 +570,82 @@ class Table(QObject):
             self.update(self[rows[0]+1][-1])
 
     @Slot()
-    def highlight_row(self):
+    def highlight_row(self) -> None:
+        '''Highlighting all rows that have a selected item'''
         self.unhighlight_all()
 
         for row in map(lambda item: self[item][0], self.__table.selectedItems()):
             for col in range(self.cols):
                 self[row][col].setBackground(QColor(255, 255, 204))
     
-    def unhighlight_all(self):
+    def unhighlight_all(self) -> None:
+        '''Unhighliting all rows in the table'''
         for row in self:
             for item in row:
                 item.setBackground(QBrush())
 
     @Slot(QTableWidgetItem)
-    def update(self, item):
+    def update(self, item: Item) -> None:   # Takes a link to the changed item
+        '''The main table update loop'''
         try:
+            # Temporary disconnecting table updates to prevent recursion
             self.__table.itemChanged.disconnect(self.update)
 
             self.count_area()
             self.count_volume()
             self.composite_area()
             self.sum_area()
-        finally:
+
+        finally:    # Always turns table updates back ON
             self.__table.itemChanged.connect(self.update)
 
-    def count_area(self):
+    def count_area(self) -> None:
+        '''Updates values in "Area" column'''
+
         for row in range(self.rows):
             self[row, 4] = self[row, 1] * self[row, 2]
     
-    def count_volume(self):
+    def count_volume(self) -> None:
+        '''Updates values in "Volume" column'''
+
         for row in range(self.rows):
             self[row, 5] = self[row, 3] * self[row, 4]
 
-    def sum_area(self):
-        sum_ = Dec('0')
-        sum_a = Dec('0')
+    def sum_area(self) -> None:
+        '''Updates area sum'''
+
+        sum_ = Dec('0')     # Total area
+        sum_a = Dec('0')    # Dwelling area
 
         for row in range(len(self)):
             if not self[row, 0][0].startswith('+'):
                 sum_ += self[row, 4]
+            
+            # Adding item value in dwelling area sum if it's row has first character 'A' in the "Letter" column
             if self[row, 0][0] in ('A', 'a', 'А', 'а'):
                 sum_a += self[row, 4]
 
+        # Emits the signal with tuple of counted sums as an argument
         self.area_sum_changed.emit((sum_, sum_a))
 
-    def composite_area(self):
+    def composite_area(self) -> None:
+        '''If row has first character '+' in "Letter" column it will add it's area value to previous row value'''
+
+        # Starting iteration of table rows in reverse,
+        # so it can sum area values by chain to the top row, that has no '+'
         for row in range(self.rows-1, -1, -1):
             if self[row, 0].startswith('+'):
                 if row == 0:
-                    self[row, 0] = self[row, 0].replace('+', '')
+                    self[row, 0] = self[row, 0].replace('+', '')    # Deleting '+' from "Letter" value if it has no rows above
                 else:
                     for col in (4, 5):
                         self[row-1, col] = self[row-1][col].value + self[row][col].value
-                        self[row][col].setBackground(QColor(255, 240, 200))
-                        self[row-1][col].setBackground(QColor(220, 255, 220))
+                        self[row][col].setBackground(QColor(255, 240, 200))     # Highlighting row that is added
+                        self[row-1][col].setBackground(QColor(220, 255, 220))   # Highlighting row to which is added with different color
 
-    def load(self, matrix):
+    def load(self, matrix: Iterable[Iterable]) -> None:
+        '''Loading table from matrix'''
+
         self.rows = len(matrix)
         if matrix:
             for row in range(len(matrix)):
@@ -595,10 +653,13 @@ class Table(QObject):
                     self[row, col] = matrix[row][col]
 
 
-    def get_matrix(self):
+    def get_matrix(self) -> tuple[tuple]:
+        '''Get matrix of table items'''
         return tuple(tuple(str(self[row, col]) for col in range(self.cols))[:-2] for row in range(self.rows))
     
-    def write_xlsx(self, path):
+    def write_xlsx(self, path: str) -> None:
+        '''Exporting table to .xlsx (currently not used)'''
+
         wb = Workbook()
         ws = wb.active
         for row in self:
