@@ -2,14 +2,15 @@
 import sys
 from traceback import format_exception_only, format_exception
 from decimal import Decimal as Dec
-from keyboard import add_hotkey
-from pyperclip import copy
-from openpyxl import Workbook
 from json import dump, load
 from os.path import exists
 
 from typing import Any, Iterator, Iterable
 from types import FunctionType
+
+from keyboard import add_hotkey
+from pyperclip import copy
+# from openpyxl import Workbook # not used
 
 from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidget, QTableWidgetItem, QFileDialog, QMessageBox, QWidget, QTableWidget, QTextBrowser, QPushButton, QLabel
 from PySide6.QtGui import QIcon, QColor, QBrush, QCloseEvent, QFont
@@ -115,7 +116,7 @@ class MainWindow(QMainWindow):
                     self.table.load(table)
 
                     for i in range(len(self.floors)):
-                        self.ui.tabWidget_floors.removeTab(i)
+                        self.remove_floor()
                     self.floors = []
 
                     for i in range(len(tables)):
@@ -193,7 +194,7 @@ class MainWindow(QMainWindow):
             self.ui.tabWidget_floors.setTabText(i, f"Поверх {i+1}")
     
     @Slot(tuple)
-    def sum_floors(self, areas: tuple):
+    def sum_floors(self, areas: tuple[Dec, Dec]):
         '''Displaying area sum for all floors'''
         sum_total, sum_dwelling, sum_economical = [Dec('0')]*3
 
@@ -210,15 +211,19 @@ class MainWindow(QMainWindow):
     def tab_add_row(self) -> None:
         '''Adds a new line in a table if Tab is pressed on the last item'''
         table = self.current_table()
+        item = self.current_item()
 
-        if self.current_item() == table[-1][-1]:
-            table.add_row()
+        if table and item:
+            if self.current_item() == table[-1][-1]:
+                table.add_row()
     
     def current_item(self) -> QTableWidgetItem | None:
         '''Returns first currently selected item'''
 
         table = self.current_table()
-        return table.selectedItems[0] if table.rows else None
+        if table:
+            items = table.selectedItems
+            return items[0] if items else None
     
     def current_table(self) -> QTableWidget:
         '''Returns current table'''
@@ -227,7 +232,7 @@ class MainWindow(QMainWindow):
         tab2 = self.ui.tabWidget_floors.currentIndex()
         if tab1 == 0:
             return self.table
-        else:
+        elif self.floors:
             return self.floors[tab2][0]
     
     def create_floor(self, indx: int) -> tuple[QTableWidget, QPushButton, QPushButton, QPushButton, QLabel, QLabel, QLabel, QTextBrowser, QTextBrowser, QTextBrowser]:
@@ -463,7 +468,7 @@ class Item(QTableWidgetItem):
     @staticmethod
     def round(num: Dec, rounding: int) -> Dec:
         '''Rounding to the given number of decimal places'''
-        num += Dec('0.000000001')   # 0.5 rounding to 1
+        num *= Dec('1.000000001')   # 0.5 rounding to 1
         return round(num, rounding)
     
     def verify_value(self, value: Any) -> Any:
@@ -622,6 +627,8 @@ class Table(QObject):
 
         for row in range(self.rows):
             self[row, 4] = self[row, 1] * self[row, 2]
+            if self[row, 0].startswith('-'):    # Inverting area value if "Letter" column in row starts with '-'
+                self[row, 4] *= -1
     
     def count_volume(self) -> None:
         '''Updates values in "Volume" column'''
@@ -636,11 +643,12 @@ class Table(QObject):
         sum_a = Dec('0')    # Dwelling area
 
         for row in range(len(self)):
-            if not self[row, 0][0].startswith('+'):
-                sum_ += self[row, 4]
+            if self[row, 0][0].startswith(('+', '-')):  # If "Letter" starts with '+' or '-' not adding to the sum
+                continue
+            sum_ += self[row, 4]
             
-            # Adding item value in dwelling area sum if it's row has first character 'A' in the "Letter" column
-            if self[row, 0][0] in ('A', 'a', 'А', 'а'):
+            # Adding item value in dwelling area sum if it's row has character 'A' or 'Ж' in the "Letter" column
+            if not set(self[row, 0]).isdisjoint(('A', 'a', 'А', 'а', 'Ж', 'ж')):
                 sum_a += self[row, 4]
 
         # Emits the signal with tuple of counted sums as an argument
@@ -652,14 +660,17 @@ class Table(QObject):
         # Starting iteration of table rows in reverse,
         # so it can sum area values by chain to the top row, that has no '+'
         for row in range(self.rows-1, -1, -1):
-            if self[row, 0].startswith('+'):
+            if self[row, 0].startswith(('+', '-')):
                 if row == 0:
-                    self[row, 0] = self[row, 0].replace('+', '')    # Deleting '+' from "Letter" value if it has no rows above
+                    self[row, 0] = self[row, 0].lstrip('+-')    # Deleting '+' and '-' from "Letter" value if it has no rows above
                 else:
                     for col in (4, 5):
                         self[row-1, col] = self[row-1][col].value + self[row][col].value
                         self[row][col].setBackground(QColor(255, 240, 200))     # Highlighting row that is added
                         self[row-1][col].setBackground(QColor(220, 255, 220))   # Highlighting row to which is added with different color
+            if self[row, 0].startswith('-'):
+                for col in (4, 5):
+                    self[row][col].setBackground(QColor(255, 200, 200))     # Highlighting row that is subtracted with another color
 
     def load(self, matrix: Iterable[Iterable]) -> None:
         '''Loading table from matrix'''
@@ -675,14 +686,14 @@ class Table(QObject):
         '''Get matrix of table items'''
         return tuple(tuple(str(self[row, col]) for col in range(self.cols))[:-2] for row in range(self.rows))
     
-    def write_xlsx(self, path: str) -> None:
-        '''Exporting table to .xlsx (currently not used)'''
+    # def write_xlsx(self, path: str) -> None:
+    #     '''Exporting table to .xlsx (currently not used)'''
 
-        wb = Workbook()
-        ws = wb.active
-        for row in self:
-            ws.append(tuple(map(lambda item: item.text(), row)))
-        wb.save(path)
+    #     wb = Workbook()
+    #     ws = wb.active
+    #     for row in self:
+    #         ws.append(tuple(map(lambda item: item.text(), row)))
+    #     wb.save(path)
 
 
 
