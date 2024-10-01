@@ -3,3 +3,4 @@ __pycache__/
 build/
 dist/
 mainwindow.spec
+calcarea.pyproject.user
