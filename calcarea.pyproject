@@ -2,6 +2,12 @@
     "files": [
         "mainwindow.py",
         "form.ui",
-        ".gitignore"
+        ".gitignore",
+        "calcarea.pyproject.user",
+        "COPYING.txt",
+        "mainwindow.spec",
+        "README.md",
+        "requirements.txt",
+        "ui_form.py"
     ]
 }
