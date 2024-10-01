@@ -12,7 +12,7 @@ from keyboard import add_hotkey
 from pyperclip import copy
 # from openpyxl import Workbook # not used
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidget, QTableWidgetItem, QFileDialog, QMessageBox, QWidget, QTableWidget, QTextBrowser, QPushButton, QLabel
+from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidget, QTableWidgetItem, QFileDialog, QMessageBox, QWidget, QTextBrowser, QPushButton, QLabel
 from PySide6.QtGui import QIcon, QColor, QBrush, QCloseEvent, QFont
 from PySide6.QtCore import Qt, Signal, Slot, QObject, QRect, QCoreApplication
 
