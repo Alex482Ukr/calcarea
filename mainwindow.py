@@ -35,7 +35,7 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(icon)
 
         # Setting up table
-        self.table = Table(self.ui.tableWidget)
+        self.table = Table(self.ui.tableWidget, dw_chars=frozenset(('A', 'a', 'А', 'а')))
         self.table.area_sum_changed.connect(self.connect_area_widgets((self.ui.area_total, self.ui.area_dwelling, self.ui.area_economical)))
         self.ui.button_add_row.clicked.connect(self.table.add_row)
         self.ui.button_remove_row.clicked.connect(self.table.remove_current_row)
@@ -257,7 +257,7 @@ class MainWindow(QMainWindow):
         table.setGeometry(QRect(0, 0, 461, 291))
         table.horizontalHeader().setDefaultSectionSize(70)
         table.show()
-        table_obj = Table(table)
+        table_obj = Table(table, dw_chars=frozenset(('Ж', 'ж')))
 
         # button_add_row
         button_add_row = QPushButton(parent)
@@ -490,11 +490,13 @@ class Table(QObject):
     '''An interface to operate QTableWidgets'''
     area_sum_changed = Signal(tuple)    # Signal emitted when area sums are changed
 
-    def __init__(self, widget: QTableWidget) -> None:
+    def __init__(self, widget: QTableWidget, dw_chars=frozenset(('A', 'a', 'А', 'а', 'Ж', 'ж'))) -> None:
         super().__init__()
         self.__table = widget
         self.__table.itemChanged.connect(self.update)
         self.__table.itemSelectionChanged.connect(self.highlight_row)
+
+        self.dw_chars = dw_chars
     
     def __getitem__(self, indx: int | Iterable[int] | Item) -> tuple[Item] | (str | Dec) | tuple[int, int]:
         '''Return row by given index
@@ -648,7 +650,7 @@ class Table(QObject):
             sum_ += self[row, 4]
             
             # Adding item value in dwelling area sum if it's row has character 'A' or 'Ж' in the "Letter" column
-            if not set(self[row, 0]).isdisjoint(('A', 'a', 'А', 'а', 'Ж', 'ж')):
+            if not set(self[row, 0]).isdisjoint(self.dw_chars):
                 sum_a += self[row, 4]
 
         # Emits the signal with tuple of counted sums as an argument
