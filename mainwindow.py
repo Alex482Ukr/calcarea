@@ -683,6 +683,7 @@ class Table(QObject):
             if self[row, 0].startswith('-'):
                 for col in (4, 5):
                     self[row][col].setBackground(QColor(255, 200, 200))     # Highlighting row that is subtracted with another color
+                    self[row][col].setForeground(QColor(0, 0, 0))
 
     def load(self, matrix: Iterable[Iterable]) -> None:
         '''Loading table from matrix'''
