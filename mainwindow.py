@@ -497,6 +497,7 @@ class Table(QObject):
         self.__table.itemSelectionChanged.connect(self.highlight_row)
 
         self.dw_chars = dw_chars
+        self.hrows = set()
     
     def __getitem__(self, indx: int | Iterable[int] | Item) -> tuple[Item] | (str | Dec) | tuple[int, int]:
         '''Return row by given index
@@ -599,17 +600,19 @@ class Table(QObject):
         '''Highlighting all rows that have a selected item'''
         self.unhighlight_all()
 
-        for row in map(lambda item: self[item][0], self.__table.selectedItems()):
+        self.hrows = set(map(lambda item: self[item][0], self.__table.selectedItems()))
+        for row in self.hrows:
             for col in range(self.cols):
                 self[row][col].setBackground(QColor(255, 255, 204))
                 self[row][col].setForeground(QColor(0, 0, 0))
     
     def unhighlight_all(self) -> None:
         '''Unhighliting all rows in the table'''
-        for row in self:
-            for item in row:
-                item.setBackground(QBrush())
-                item.setForeground(QBrush())
+        for row in self.hrows:
+            for col in range(self.cols):
+                self[row][col].setBackground(QBrush())
+                self[row][col].setForeground(QBrush())
+        self.hrows = set()
 
     @Slot(QTableWidgetItem)
     def update(self, item: Item) -> None:   # Takes a link to the changed item
