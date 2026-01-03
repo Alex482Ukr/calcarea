@@ -602,12 +602,14 @@ class Table(QObject):
         for row in map(lambda item: self[item][0], self.__table.selectedItems()):
             for col in range(self.cols):
                 self[row][col].setBackground(QColor(255, 255, 204))
+                self[row][col].setForeground(QColor(0, 0, 0))
     
     def unhighlight_all(self) -> None:
         '''Unhighliting all rows in the table'''
         for row in self:
             for item in row:
                 item.setBackground(QBrush())
+                item.setForeground(QBrush())
 
     @Slot(QTableWidgetItem)
     def update(self, item: Item) -> None:   # Takes a link to the changed item
