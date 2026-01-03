@@ -677,7 +677,9 @@ class Table(QObject):
                     for col in (4, 5):
                         self[row-1, col] = self[row-1][col].value + self[row][col].value
                         self[row][col].setBackground(QColor(255, 240, 200))     # Highlighting row that is added
+                        self[row][col].setForeground(QColor(0, 0, 0))
                         self[row-1][col].setBackground(QColor(220, 255, 220))   # Highlighting row to which is added with different color
+                        self[row-1][col].setForeground(QColor(0, 0, 0))
             if self[row, 0].startswith('-'):
                 for col in (4, 5):
                     self[row][col].setBackground(QColor(255, 200, 200))     # Highlighting row that is subtracted with another color
