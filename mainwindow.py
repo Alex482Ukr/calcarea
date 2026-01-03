@@ -598,6 +598,7 @@ class Table(QObject):
     @Slot()
     def highlight_row(self) -> None:
         '''Highlighting all rows that have a selected item'''
+        self.__table.blockSignals(True)
         self.unhighlight_all()
 
         self.hrows = set(map(lambda item: self[item][0], self.__table.selectedItems()))
@@ -605,6 +606,7 @@ class Table(QObject):
             for col in range(self.cols):
                 self[row][col].setBackground(QColor(255, 255, 204))
                 self[row][col].setForeground(QColor(0, 0, 0))
+        self.__table.blockSignals(False)
     
     def unhighlight_all(self) -> None:
         '''Unhighliting all rows in the table'''
@@ -617,6 +619,7 @@ class Table(QObject):
     @Slot(QTableWidgetItem)
     def update(self, item: Item) -> None:   # Takes a link to the changed item
         '''The main table update loop'''
+        print("Update triggered")
         try:
             # Temporary disconnecting table updates to prevent recursion
             self.__table.itemChanged.disconnect(self.update)
