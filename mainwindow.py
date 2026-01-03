@@ -557,7 +557,7 @@ class Table(QObject):
 
         # Temporary disconnecting table updates 
         # to prevent huge amount of errors while filling row
-        self.__table.itemChanged.disconnect(self.update)
+        self.__table.blockSignals(True)
 
         self.__table.setItem(row, 0, Item(str, 'A'))    # Filling "Letter" column
 
@@ -571,7 +571,7 @@ class Table(QObject):
             self[row][col].editable = False
 
         # Turns table updates back ON
-        self.__table.itemChanged.connect(self.update)
+        self.__table.blockSignals(False)
 
     @Slot()
     def remove_current_row(self) -> None:
@@ -606,6 +606,7 @@ class Table(QObject):
             for col in range(self.cols):
                 self[row][col].setBackground(QColor(255, 255, 204))
                 self[row][col].setForeground(QColor(0, 0, 0))
+        self.composite_area()
         self.__table.blockSignals(False)
     
     def unhighlight_all(self) -> None:
@@ -622,15 +623,14 @@ class Table(QObject):
         print("Update triggered")
         try:
             # Temporary disconnecting table updates to prevent recursion
-            self.__table.itemChanged.disconnect(self.update)
-
+            self.__table.blockSignals(True)
             self.count_area()
             self.count_volume()
             self.composite_area()
             self.sum_area()
 
         finally:    # Always turns table updates back ON
-            self.__table.itemChanged.connect(self.update)
+            self.__table.blockSignals(False)
 
     def count_area(self) -> None:
         '''Updates values in "Area" column'''
