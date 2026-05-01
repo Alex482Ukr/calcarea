@@ -4,3 +4,4 @@ build/
 dist/
 mainwindow.spec
 calcarea.pyproject.user
+setup/
