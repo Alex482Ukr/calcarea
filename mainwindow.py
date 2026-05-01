@@ -225,7 +225,7 @@ class MainWindow(QMainWindow):
             items = table.selectedItems
             return items[0] if items else None
     
-    def current_table(self) -> QTableWidget:
+    def current_table(self):
         '''Returns current table'''
 
         tab1 = self.ui.tabWidget.currentIndex()
