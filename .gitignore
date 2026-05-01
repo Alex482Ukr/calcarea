@@ -5,3 +5,5 @@ dist/
 mainwindow.spec
 calcarea.pyproject.user
 setup/
+.venv/
+.idea/
