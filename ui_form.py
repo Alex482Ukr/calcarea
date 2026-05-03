@@ -307,7 +307,7 @@ class Ui_MainWindow(object):
 "</style></head><body style=\" font-family:'Segoe UI'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:'Sans Serif';\">0</span></p></body></html>", None))
         self.label_Sdw.setText(QCoreApplication.translate("MainWindow", u"S\u0436\u0438\u0442\u043b\u043e\u0432\u0430", None))
-        self.button_remove_row.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0434\u0430\u043b\u0438\u0442\u0438 \u0440\u044f\u0434\u043e\u043a", None))
+        self.button_remove_row.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0434\u0430\u043b\u0438\u0442\u0438 \u0440\u044f\u0434\u043a\u0438", None))
         self.checkBox.setText(QCoreApplication.translate("MainWindow", u"\u0416\u0438\u0442\u043b\u043e\u0432\u0430", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QCoreApplication.translate("MainWindow", u"\u0414\u0456\u043b\u044f\u043d\u043a\u0430", None))
         self.label_Sec_floor.setText(QCoreApplication.translate("MainWindow", u"S\u0433\u043e\u0441\u043f", None))
@@ -338,7 +338,7 @@ class Ui_MainWindow(object):
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:'Sans Serif';\">0</span></p></body></html>", None))
         self.label_Sdw_floor.setText(QCoreApplication.translate("MainWindow", u"S\u0436\u0438\u0442\u043b\u043e\u0432\u0430", None))
         self.button_add_floor.setText(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0434\u0430\u0442\u0438 \u043f\u043e\u0432\u0435\u0440\u0445", None))
-        self.button_remove_row_n.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0434\u0430\u043b\u0438\u0442\u0438 \u0440\u044f\u0434\u043e\u043a", None))
+        self.button_remove_row_n.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0434\u0430\u043b\u0438\u0442\u0438 \u0440\u044f\u0434\u043a\u0438", None))
         ___qtablewidgetitem6 = self.tableWidget_n.horizontalHeaderItem(0)
         ___qtablewidgetitem6.setText(QCoreApplication.translate("MainWindow", u"\u0411\u0443\u043a\u0432\u0430", None))
         ___qtablewidgetitem7 = self.tableWidget_n.horizontalHeaderItem(1)

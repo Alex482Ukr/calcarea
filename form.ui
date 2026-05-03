@@ -251,12 +251,12 @@ li.checked::marker { content: &quot;\2612&quot;; }
        </rect>
       </property>
       <property name="text">
-       <string>Видалити рядок</string>
+       <string>Видалити рядки</string>
       </property>
      </widget>
      <widget class="QCheckBox" name="checkBox">
       <property name="enabled">
-       <bool>true</bool>
+       <bool>false</bool>
       </property>
       <property name="geometry">
        <rect>
@@ -453,7 +453,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
          </rect>
         </property>
         <property name="text">
-         <string>Видалити рядок</string>
+         <string>Видалити рядки</string>
         </property>
        </widget>
        <widget class="QTableWidget" name="tableWidget_n">

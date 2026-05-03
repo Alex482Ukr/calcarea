@@ -349,7 +349,7 @@ class MainWindow(QMainWindow):
 
         button_add_row.setText(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0434\u0430\u0442\u0438 \u0440\u044f\u0434\u043e\u043a", None))
         button_insert_row.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0441\u0442\u0430\u0432\u0438\u0442\u0438 \u0440\u044f\u0434\u043e\u043a", None))
-        button_remove_row.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0434\u0430\u043b\u0438\u0442\u0438 \u0440\u044f\u0434\u043e\u043a", None))
+        button_remove_row.setText(QCoreApplication.translate("MainWindow", u"Видалити рядки", None))
 
         label_S.setText(QCoreApplication.translate("MainWindow", u"S\u0437\u0430\u0433\u0430\u043b\u044c\u043d\u0430", None))
         label_Sdw.setText(QCoreApplication.translate("MainWindow", u"S\u0436\u0438\u0442\u043b\u043e\u0432\u0430", None))
@@ -508,6 +508,7 @@ class Table(QObject):
         self.__table = widget
         self.__table.itemChanged.connect(self.update)
         self.__table.itemSelectionChanged.connect(self.highlight_row)
+        self.__table.itemSelectionChanged.connect(self.dw_checkbox_change_state)
 
         self.dw_chars = dw_chars
         self.hrows = set()
@@ -564,6 +565,10 @@ class Table(QObject):
     def add_row(self) -> None:
         '''Adding row to the table'''
         self.rows += 1
+    
+    @Slot()
+    def dw_checkbox_change_state(self):
+        pass
 
     def fill_row(self, row: int) -> None:
         '''Filling row with items with default values'''
@@ -591,7 +596,7 @@ class Table(QObject):
         '''Deleting selected row'''
 
         items = list(map(lambda item: self[item], self.__table.selectedItems()))
-        for row in map(lambda item: item[0], items):
+        for row in map(lambda item: item[0], items[::-1]):
             self.__table.removeRow(row)
 
         if items:
