@@ -35,7 +35,7 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(icon)
 
         # Setting up table
-        self.table = Table(self.ui.tableWidget, dw_checkbox=self.ui.checkBox, dw_chars=frozenset(('A', 'a', 'А', 'а')))
+        self.table = Table(self.ui.tableWidget, dw_checkbox=self.ui.checkBox)
         self.table.area_sum_changed.connect(self.connect_area_widgets((self.ui.area_total, self.ui.area_dwelling, self.ui.area_economical)))
         self.ui.button_add_row.clicked.connect(self.table.add_row)
         self.ui.button_remove_row.clicked.connect(self.table.remove_current_row)
@@ -270,7 +270,7 @@ class MainWindow(QMainWindow):
         table.setGeometry(QRect(0, 0, 461, 291))
         table.horizontalHeader().setDefaultSectionSize(70)
         table.show()
-        table_obj = Table(table, dw_checkbox=checkBox, dw_chars=frozenset(('Ж', 'ж')))
+        table_obj = Table(table, dw_checkbox=checkBox)
 
         # button_add_row
         button_add_row = QPushButton(parent)
@@ -505,7 +505,7 @@ class Table(QObject):
     '''An interface to operate QTableWidgets'''
     area_sum_changed = Signal(tuple)    # Signal emitted when area sums are changed
 
-    def __init__(self, widget: QTableWidget, dw_checkbox: QCheckBox, dw_chars=frozenset(('A', 'a', 'А', 'а', 'Ж', 'ж'))) -> None:
+    def __init__(self, widget: QTableWidget, dw_checkbox: QCheckBox) -> None:
         super().__init__()
         self.__table = widget
         self.__table.itemChanged.connect(self.update)
@@ -513,7 +513,6 @@ class Table(QObject):
         self.__table.itemSelectionChanged.connect(self.dw_checkbox_change_state)
         
         self.dw_checkbox = dw_checkbox
-        self.dw_chars = dw_chars
         self.dw_rows = set()
         self.hrows = set()
     
@@ -580,12 +579,19 @@ class Table(QObject):
             self.dw_checkbox.setEnabled(True)
             self.dw_checkbox.setChecked(False)
             self.dw_checkbox.setTristate(False)
+            dw = False
+            ec = False
             for row in self.hrows:
                 if row in self.dw_rows:
-                    self.dw_checkbox.setChecked(True)
-                elif self.dw_checkbox.isChecked():
+                    dw = True
+                    # self.dw_checkbox.setChecked(True)
+                else:
+                    ec = True
+                if dw and ec:
                     self.dw_checkbox.setCheckState(Qt.CheckState(1))
                     break
+            else:
+                self.dw_checkbox.setChecked(dw)
         self.dw_checkbox.blockSignals(False)
 
     @Slot()
@@ -599,6 +605,10 @@ class Table(QObject):
             for row in self.hrows:
                 self.dw_rows.add(row)
         self.highlight_row()
+
+        self.__table.blockSignals(True)
+        self.sum_area()
+        self.__table.blockSignals(False)
 
     def fill_row(self, row: int) -> None:
         '''Filling row with items with default values'''
@@ -627,12 +637,15 @@ class Table(QObject):
 
         items = list(map(lambda item: self[item], self.__table.selectedItems()))
         for row in map(lambda item: item[0], items[::-1]):
+            self.dw_rows.discard(row)
             self.__table.removeRow(row)
 
         if items:
             item = items[0]
             if item[0] < self.rows:
                 self[item[0]][item[1]].setSelected(True)
+
+        self.update()
 
     @Slot()
     def insert_after_current_row(self) -> None:
@@ -641,7 +654,6 @@ class Table(QObject):
         if rows:
             self.__table.insertRow(rows[0]+1)
             self.fill_row(rows[0]+1)
-            self.unhighlight_all()
             self.update(self[rows[0]+1][-1])
         else:
             self.add_row()
@@ -650,7 +662,7 @@ class Table(QObject):
     def highlight_row(self) -> None:
         '''Highlighting all rows that have a selected item'''
         self.__table.blockSignals(True)
-        self.unhighlight_all()
+        self.unhighlight()
 
         self.hrows = set(map(lambda item: self[item][0], self.__table.selectedItems()))
         for row in self.hrows:
@@ -661,9 +673,17 @@ class Table(QObject):
         self.highlight_dw()
         self.__table.blockSignals(False)
     
+    def unhighlight(self) -> None:
+        '''Unhighliting all selected rows'''
+        for row in self.hrows:
+            for col in range(self.cols):
+                self[row][col].setBackground(QBrush())
+                self[row][col].setForeground(QBrush())
+        self.hrows = set()
+
     def unhighlight_all(self) -> None:
         '''Unhighliting all rows in the table'''
-        for row in self.hrows:
+        for row in range(self.rows):
             for col in range(self.cols):
                 self[row][col].setBackground(QBrush())
                 self[row][col].setForeground(QBrush())
@@ -675,10 +695,11 @@ class Table(QObject):
             self[row][0].setForeground(QColor(0, 0, 0))
 
     @Slot(QTableWidgetItem)
-    def update(self, item: Item) -> None:   # Takes a link to the changed item
+    def update(self, item: Item = None) -> None:   # Takes a link to the changed item
         '''The main table update loop'''
-        row, col = self[item]
-        print(f"Update triggered by [{row}][{col}]")
+        if item:
+            row, col = self[item]
+            print(f"Update triggered by [{row}][{col}]")
 
         try:
             # Temporary disconnecting table updates to prevent recursion
@@ -718,7 +739,7 @@ class Table(QObject):
             sum_ += self[row, 4]
             
             # Adding item value in dwelling area sum if it's row has character 'A' or 'Ж' in the "Letter" column
-            if not set(self[row, 0]).isdisjoint(self.dw_chars):
+            if row in self.dw_rows:
                 sum_a += self[row, 4]
 
         # Emits the signal with tuple of counted sums as an argument
