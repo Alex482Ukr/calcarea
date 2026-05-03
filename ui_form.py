@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'form.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.7.2
+## Created by: Qt User Interface Compiler version 6.11.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -16,10 +16,10 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QIcon, QImage, QKeySequence, QLinearGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
-from PySide6.QtWidgets import (QApplication, QHeaderView, QLabel, QMainWindow,
-    QMenu, QMenuBar, QPushButton, QSizePolicy,
-    QStatusBar, QTabWidget, QTableWidget, QTableWidgetItem,
-    QTextBrowser, QWidget)
+from PySide6.QtWidgets import (QApplication, QCheckBox, QHeaderView, QLabel,
+    QMainWindow, QMenu, QMenuBar, QPushButton,
+    QSizePolicy, QStatusBar, QTabWidget, QTableWidget,
+    QTableWidgetItem, QTextBrowser, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -70,42 +70,51 @@ class Ui_MainWindow(object):
         self.tableWidget.horizontalHeader().setDefaultSectionSize(70)
         self.label_Sec = QLabel(self.tab)
         self.label_Sec.setObjectName(u"label_Sec")
-        self.label_Sec.setGeometry(QRect(480, 100, 101, 31))
+        self.label_Sec.setGeometry(QRect(480, 140, 101, 31))
         font = QFont()
         font.setPointSize(12)
         self.label_Sec.setFont(font)
-        self.label_Sec.setAlignment(Qt.AlignCenter)
+        self.label_Sec.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.label_S = QLabel(self.tab)
         self.label_S.setObjectName(u"label_S")
-        self.label_S.setGeometry(QRect(480, 130, 101, 31))
+        self.label_S.setGeometry(QRect(480, 170, 101, 31))
         font1 = QFont()
         font1.setPointSize(12)
         font1.setBold(True)
         self.label_S.setFont(font1)
-        self.label_S.setAlignment(Qt.AlignCenter)
+        self.label_S.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.button_add_row = QPushButton(self.tab)
         self.button_add_row.setObjectName(u"button_add_row")
         self.button_add_row.setGeometry(QRect(480, 0, 201, 25))
         self.area_total = QTextBrowser(self.tab)
         self.area_total.setObjectName(u"area_total")
-        self.area_total.setGeometry(QRect(590, 130, 91, 31))
+        self.area_total.setGeometry(QRect(590, 170, 91, 31))
         self.button_insert_row = QPushButton(self.tab)
         self.button_insert_row.setObjectName(u"button_insert_row")
         self.button_insert_row.setGeometry(QRect(480, 30, 101, 25))
         self.area_economical = QTextBrowser(self.tab)
         self.area_economical.setObjectName(u"area_economical")
-        self.area_economical.setGeometry(QRect(590, 100, 91, 31))
+        self.area_economical.setGeometry(QRect(590, 140, 91, 31))
         self.area_dwelling = QTextBrowser(self.tab)
         self.area_dwelling.setObjectName(u"area_dwelling")
-        self.area_dwelling.setGeometry(QRect(590, 70, 91, 31))
+        self.area_dwelling.setGeometry(QRect(590, 110, 91, 31))
         self.label_Sdw = QLabel(self.tab)
         self.label_Sdw.setObjectName(u"label_Sdw")
-        self.label_Sdw.setGeometry(QRect(480, 70, 101, 31))
+        self.label_Sdw.setGeometry(QRect(480, 110, 101, 31))
         self.label_Sdw.setFont(font)
-        self.label_Sdw.setAlignment(Qt.AlignCenter)
+        self.label_Sdw.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.button_remove_row = QPushButton(self.tab)
         self.button_remove_row.setObjectName(u"button_remove_row")
         self.button_remove_row.setGeometry(QRect(580, 30, 101, 25))
+        self.checkBox = QCheckBox(self.tab)
+        self.checkBox.setObjectName(u"checkBox")
+        self.checkBox.setEnabled(False)
+        self.checkBox.setGeometry(QRect(480, 70, 84, 24))
+        self.checkBox.setCheckable(True)
+        self.checkBox.setChecked(False)
+        self.checkBox.setAutoRepeat(False)
+        self.checkBox.setAutoExclusive(False)
+        self.checkBox.setTristate(True)
         self.tabWidget.addTab(self.tab, "")
         self.tab_2 = QWidget()
         self.tab_2.setObjectName(u"tab_2")
@@ -113,12 +122,12 @@ class Ui_MainWindow(object):
         self.label_Sec_floor.setObjectName(u"label_Sec_floor")
         self.label_Sec_floor.setGeometry(QRect(240, 380, 101, 31))
         self.label_Sec_floor.setFont(font)
-        self.label_Sec_floor.setAlignment(Qt.AlignCenter)
+        self.label_Sec_floor.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.label_S_floor = QLabel(self.tab_2)
         self.label_S_floor.setObjectName(u"label_S_floor")
         self.label_S_floor.setGeometry(QRect(480, 380, 101, 31))
         self.label_S_floor.setFont(font1)
-        self.label_S_floor.setAlignment(Qt.AlignCenter)
+        self.label_S_floor.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.area_total_floor = QTextBrowser(self.tab_2)
         self.area_total_floor.setObjectName(u"area_total_floor")
         self.area_total_floor.setGeometry(QRect(590, 380, 91, 31))
@@ -132,7 +141,7 @@ class Ui_MainWindow(object):
         self.label_Sdw_floor.setObjectName(u"label_Sdw_floor")
         self.label_Sdw_floor.setGeometry(QRect(10, 380, 101, 31))
         self.label_Sdw_floor.setFont(font)
-        self.label_Sdw_floor.setAlignment(Qt.AlignCenter)
+        self.label_Sdw_floor.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.button_add_floor = QPushButton(self.tab_2)
         self.button_add_floor.setObjectName(u"button_add_floor")
         self.button_add_floor.setGeometry(QRect(10, 340, 141, 25))
@@ -164,34 +173,43 @@ class Ui_MainWindow(object):
         self.tableWidget_n.horizontalHeader().setDefaultSectionSize(70)
         self.area_economical_n = QTextBrowser(self.tab_n)
         self.area_economical_n.setObjectName(u"area_economical_n")
-        self.area_economical_n.setGeometry(QRect(590, 100, 91, 31))
+        self.area_economical_n.setGeometry(QRect(590, 140, 91, 31))
         self.button_add_row_n = QPushButton(self.tab_n)
         self.button_add_row_n.setObjectName(u"button_add_row_n")
         self.button_add_row_n.setGeometry(QRect(480, 0, 201, 25))
         self.area_total_n = QTextBrowser(self.tab_n)
         self.area_total_n.setObjectName(u"area_total_n")
-        self.area_total_n.setGeometry(QRect(590, 130, 91, 31))
+        self.area_total_n.setGeometry(QRect(590, 170, 91, 31))
         self.button_insert_row_n = QPushButton(self.tab_n)
         self.button_insert_row_n.setObjectName(u"button_insert_row_n")
         self.button_insert_row_n.setGeometry(QRect(480, 30, 101, 25))
         self.label_Sdw_n = QLabel(self.tab_n)
         self.label_Sdw_n.setObjectName(u"label_Sdw_n")
-        self.label_Sdw_n.setGeometry(QRect(480, 70, 101, 31))
+        self.label_Sdw_n.setGeometry(QRect(480, 110, 101, 31))
         self.label_Sdw_n.setFont(font)
-        self.label_Sdw_n.setAlignment(Qt.AlignCenter)
+        self.label_Sdw_n.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.area_dwelling_n = QTextBrowser(self.tab_n)
         self.area_dwelling_n.setObjectName(u"area_dwelling_n")
-        self.area_dwelling_n.setGeometry(QRect(590, 70, 91, 31))
+        self.area_dwelling_n.setGeometry(QRect(590, 110, 91, 31))
         self.label_S_n = QLabel(self.tab_n)
         self.label_S_n.setObjectName(u"label_S_n")
-        self.label_S_n.setGeometry(QRect(480, 130, 101, 31))
+        self.label_S_n.setGeometry(QRect(480, 170, 101, 31))
         self.label_S_n.setFont(font1)
-        self.label_S_n.setAlignment(Qt.AlignCenter)
+        self.label_S_n.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.label_Sec_n = QLabel(self.tab_n)
         self.label_Sec_n.setObjectName(u"label_Sec_n")
-        self.label_Sec_n.setGeometry(QRect(480, 100, 101, 31))
+        self.label_Sec_n.setGeometry(QRect(480, 140, 101, 31))
         self.label_Sec_n.setFont(font)
-        self.label_Sec_n.setAlignment(Qt.AlignCenter)
+        self.label_Sec_n.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.checkBox_n = QCheckBox(self.tab_n)
+        self.checkBox_n.setObjectName(u"checkBox_n")
+        self.checkBox_n.setEnabled(False)
+        self.checkBox_n.setGeometry(QRect(480, 70, 84, 24))
+        self.checkBox_n.setCheckable(True)
+        self.checkBox_n.setChecked(False)
+        self.checkBox_n.setAutoRepeat(False)
+        self.checkBox_n.setAutoExclusive(False)
+        self.checkBox_n.setTristate(True)
         self.tabWidget_floors.addTab(self.tab_n, "")
         self.button_remove_floor = QPushButton(self.tab_2)
         self.button_remove_floor.setObjectName(u"button_remove_floor")
@@ -213,7 +231,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 713, 22))
+        self.menubar.setGeometry(QRect(0, 0, 713, 33))
         self.menuFile = QMenu(self.menubar)
         self.menuFile.setObjectName(u"menuFile")
         MainWindow.setMenuBar(self.menubar)
@@ -249,17 +267,17 @@ class Ui_MainWindow(object):
         self.actionSaveAs.setText(QCoreApplication.translate("MainWindow", u"\u0417\u0431\u0435\u0440\u0435\u0433\u0442\u0438 \u044f\u043a", None))
         self.actionExport.setText(QCoreApplication.translate("MainWindow", u"\u0415\u043a\u0441\u043f\u043e\u0440\u0442\u0443\u0432\u0430\u0442\u0438 \u0432 Excel", None))
         ___qtablewidgetitem = self.tableWidget.horizontalHeaderItem(0)
-        ___qtablewidgetitem.setText(QCoreApplication.translate("MainWindow", u"\u0411\u0443\u043a\u0432\u0430", None));
+        ___qtablewidgetitem.setText(QCoreApplication.translate("MainWindow", u"\u0411\u0443\u043a\u0432\u0430", None))
         ___qtablewidgetitem1 = self.tableWidget.horizontalHeaderItem(1)
-        ___qtablewidgetitem1.setText(QCoreApplication.translate("MainWindow", u"\u0428\u0438\u0440\u0438\u043d\u0430", None));
+        ___qtablewidgetitem1.setText(QCoreApplication.translate("MainWindow", u"\u0428\u0438\u0440\u0438\u043d\u0430", None))
         ___qtablewidgetitem2 = self.tableWidget.horizontalHeaderItem(2)
-        ___qtablewidgetitem2.setText(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0432\u0436\u0438\u043d\u0430", None));
+        ___qtablewidgetitem2.setText(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0432\u0436\u0438\u043d\u0430", None))
         ___qtablewidgetitem3 = self.tableWidget.horizontalHeaderItem(3)
-        ___qtablewidgetitem3.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0441\u043e\u0442\u0430", None));
+        ___qtablewidgetitem3.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0441\u043e\u0442\u0430", None))
         ___qtablewidgetitem4 = self.tableWidget.horizontalHeaderItem(4)
-        ___qtablewidgetitem4.setText(QCoreApplication.translate("MainWindow", u"\u041f\u043b\u043e\u0449\u0430", None));
+        ___qtablewidgetitem4.setText(QCoreApplication.translate("MainWindow", u"\u041f\u043b\u043e\u0449\u0430", None))
         ___qtablewidgetitem5 = self.tableWidget.horizontalHeaderItem(5)
-        ___qtablewidgetitem5.setText(QCoreApplication.translate("MainWindow", u"\u041e\u0431'\u0454\u043c", None));
+        ___qtablewidgetitem5.setText(QCoreApplication.translate("MainWindow", u"\u041e\u0431'\u0454\u043c", None))
         self.label_Sec.setText(QCoreApplication.translate("MainWindow", u"S\u0433\u043e\u0441\u043f", None))
         self.label_S.setText(QCoreApplication.translate("MainWindow", u"S\u0437\u0430\u0433\u0430\u043b\u044c\u043d\u0430", None))
         self.button_add_row.setText(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0434\u0430\u0442\u0438 \u0440\u044f\u0434\u043e\u043a", None))
@@ -269,8 +287,8 @@ class Ui_MainWindow(object):
 "hr { height: 1px; border-width: 0; }\n"
 "li.unchecked::marker { content: \"\\2610\"; }\n"
 "li.checked::marker { content: \"\\2612\"; }\n"
-"</style></head><body style=\" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">0</p></body></html>", None))
+"</style></head><body style=\" font-family:'Segoe UI'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:'Sans Serif';\">0</span></p></body></html>", None))
         self.button_insert_row.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0441\u0442\u0430\u0432\u0438\u0442\u0438 \u0440\u044f\u0434\u043e\u043a", None))
         self.area_economical.setHtml(QCoreApplication.translate("MainWindow", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
@@ -278,18 +296,19 @@ class Ui_MainWindow(object):
 "hr { height: 1px; border-width: 0; }\n"
 "li.unchecked::marker { content: \"\\2610\"; }\n"
 "li.checked::marker { content: \"\\2612\"; }\n"
-"</style></head><body style=\" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">0</p></body></html>", None))
+"</style></head><body style=\" font-family:'Segoe UI'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:'Sans Serif';\">0</span></p></body></html>", None))
         self.area_dwelling.setHtml(QCoreApplication.translate("MainWindow", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "hr { height: 1px; border-width: 0; }\n"
 "li.unchecked::marker { content: \"\\2610\"; }\n"
 "li.checked::marker { content: \"\\2612\"; }\n"
-"</style></head><body style=\" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">0</p></body></html>", None))
+"</style></head><body style=\" font-family:'Segoe UI'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:'Sans Serif';\">0</span></p></body></html>", None))
         self.label_Sdw.setText(QCoreApplication.translate("MainWindow", u"S\u0436\u0438\u0442\u043b\u043e\u0432\u0430", None))
         self.button_remove_row.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0434\u0430\u043b\u0438\u0442\u0438 \u0440\u044f\u0434\u043e\u043a", None))
+        self.checkBox.setText(QCoreApplication.translate("MainWindow", u"\u0416\u0438\u0442\u043b\u043e\u0432\u0430", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QCoreApplication.translate("MainWindow", u"\u0414\u0456\u043b\u044f\u043d\u043a\u0430", None))
         self.label_Sec_floor.setText(QCoreApplication.translate("MainWindow", u"S\u0433\u043e\u0441\u043f", None))
         self.label_S_floor.setText(QCoreApplication.translate("MainWindow", u"S\u0437\u0430\u0433\u0430\u043b\u044c\u043d\u0430", None))
@@ -299,47 +318,47 @@ class Ui_MainWindow(object):
 "hr { height: 1px; border-width: 0; }\n"
 "li.unchecked::marker { content: \"\\2610\"; }\n"
 "li.checked::marker { content: \"\\2612\"; }\n"
-"</style></head><body style=\" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">0</p></body></html>", None))
+"</style></head><body style=\" font-family:'Segoe UI'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:'Sans Serif';\">0</span></p></body></html>", None))
         self.area_economical_floor.setHtml(QCoreApplication.translate("MainWindow", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "hr { height: 1px; border-width: 0; }\n"
 "li.unchecked::marker { content: \"\\2610\"; }\n"
 "li.checked::marker { content: \"\\2612\"; }\n"
-"</style></head><body style=\" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">0</p></body></html>", None))
+"</style></head><body style=\" font-family:'Segoe UI'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:'Sans Serif';\">0</span></p></body></html>", None))
         self.area_dwelling_floor.setHtml(QCoreApplication.translate("MainWindow", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "hr { height: 1px; border-width: 0; }\n"
 "li.unchecked::marker { content: \"\\2610\"; }\n"
 "li.checked::marker { content: \"\\2612\"; }\n"
-"</style></head><body style=\" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">0</p></body></html>", None))
+"</style></head><body style=\" font-family:'Segoe UI'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:'Sans Serif';\">0</span></p></body></html>", None))
         self.label_Sdw_floor.setText(QCoreApplication.translate("MainWindow", u"S\u0436\u0438\u0442\u043b\u043e\u0432\u0430", None))
         self.button_add_floor.setText(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0434\u0430\u0442\u0438 \u043f\u043e\u0432\u0435\u0440\u0445", None))
         self.button_remove_row_n.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0434\u0430\u043b\u0438\u0442\u0438 \u0440\u044f\u0434\u043e\u043a", None))
         ___qtablewidgetitem6 = self.tableWidget_n.horizontalHeaderItem(0)
-        ___qtablewidgetitem6.setText(QCoreApplication.translate("MainWindow", u"\u0411\u0443\u043a\u0432\u0430", None));
+        ___qtablewidgetitem6.setText(QCoreApplication.translate("MainWindow", u"\u0411\u0443\u043a\u0432\u0430", None))
         ___qtablewidgetitem7 = self.tableWidget_n.horizontalHeaderItem(1)
-        ___qtablewidgetitem7.setText(QCoreApplication.translate("MainWindow", u"\u0428\u0438\u0440\u0438\u043d\u0430", None));
+        ___qtablewidgetitem7.setText(QCoreApplication.translate("MainWindow", u"\u0428\u0438\u0440\u0438\u043d\u0430", None))
         ___qtablewidgetitem8 = self.tableWidget_n.horizontalHeaderItem(2)
-        ___qtablewidgetitem8.setText(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0432\u0436\u0438\u043d\u0430", None));
+        ___qtablewidgetitem8.setText(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0432\u0436\u0438\u043d\u0430", None))
         ___qtablewidgetitem9 = self.tableWidget_n.horizontalHeaderItem(3)
-        ___qtablewidgetitem9.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0441\u043e\u0442\u0430", None));
+        ___qtablewidgetitem9.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0441\u043e\u0442\u0430", None))
         ___qtablewidgetitem10 = self.tableWidget_n.horizontalHeaderItem(4)
-        ___qtablewidgetitem10.setText(QCoreApplication.translate("MainWindow", u"\u041f\u043b\u043e\u0449\u0430", None));
+        ___qtablewidgetitem10.setText(QCoreApplication.translate("MainWindow", u"\u041f\u043b\u043e\u0449\u0430", None))
         ___qtablewidgetitem11 = self.tableWidget_n.horizontalHeaderItem(5)
-        ___qtablewidgetitem11.setText(QCoreApplication.translate("MainWindow", u"\u041e\u0431'\u0454\u043c", None));
+        ___qtablewidgetitem11.setText(QCoreApplication.translate("MainWindow", u"\u041e\u0431'\u0454\u043c", None))
         self.area_economical_n.setHtml(QCoreApplication.translate("MainWindow", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "hr { height: 1px; border-width: 0; }\n"
 "li.unchecked::marker { content: \"\\2610\"; }\n"
 "li.checked::marker { content: \"\\2612\"; }\n"
-"</style></head><body style=\" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">0</p></body></html>", None))
+"</style></head><body style=\" font-family:'Segoe UI'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:'Sans Serif';\">0</span></p></body></html>", None))
         self.button_add_row_n.setText(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0434\u0430\u0442\u0438 \u0440\u044f\u0434\u043e\u043a", None))
         self.area_total_n.setHtml(QCoreApplication.translate("MainWindow", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
@@ -347,8 +366,8 @@ class Ui_MainWindow(object):
 "hr { height: 1px; border-width: 0; }\n"
 "li.unchecked::marker { content: \"\\2610\"; }\n"
 "li.checked::marker { content: \"\\2612\"; }\n"
-"</style></head><body style=\" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">0</p></body></html>", None))
+"</style></head><body style=\" font-family:'Segoe UI'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:'Sans Serif';\">0</span></p></body></html>", None))
         self.button_insert_row_n.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0441\u0442\u0430\u0432\u0438\u0442\u0438 \u0440\u044f\u0434\u043e\u043a", None))
         self.label_Sdw_n.setText(QCoreApplication.translate("MainWindow", u"S\u0436\u0438\u0442\u043b\u043e\u0432\u0430", None))
         self.area_dwelling_n.setHtml(QCoreApplication.translate("MainWindow", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
@@ -357,10 +376,11 @@ class Ui_MainWindow(object):
 "hr { height: 1px; border-width: 0; }\n"
 "li.unchecked::marker { content: \"\\2610\"; }\n"
 "li.checked::marker { content: \"\\2612\"; }\n"
-"</style></head><body style=\" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">0</p></body></html>", None))
+"</style></head><body style=\" font-family:'Segoe UI'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:'Sans Serif';\">0</span></p></body></html>", None))
         self.label_S_n.setText(QCoreApplication.translate("MainWindow", u"S\u0437\u0430\u0433\u0430\u043b\u044c\u043d\u0430", None))
         self.label_Sec_n.setText(QCoreApplication.translate("MainWindow", u"S\u0433\u043e\u0441\u043f", None))
+        self.checkBox_n.setText(QCoreApplication.translate("MainWindow", u"\u0416\u0438\u0442\u043b\u043e\u0432\u0430", None))
         self.tabWidget_floors.setTabText(self.tabWidget_floors.indexOf(self.tab_n), QCoreApplication.translate("MainWindow", u"\u041f\u043e\u0432\u0435\u0440\u0445 n", None))
         self.button_remove_floor.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0434\u0430\u043b\u0438\u0442\u0438 \u043f\u043e\u0432\u0435\u0440\u0445", None))
         self.button_insert_floor.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0441\u0442\u0430\u0432\u0438\u0442\u0438 \u043f\u043e\u0432\u0435\u0440\u0445", None))

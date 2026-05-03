@@ -12,7 +12,7 @@ from keyboard import add_hotkey
 from pyperclip import copy
 # from openpyxl import Workbook # not used
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidget, QTableWidgetItem, QFileDialog, QMessageBox, QWidget, QTextBrowser, QPushButton, QLabel
+from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidget, QTableWidgetItem, QFileDialog, QMessageBox, QWidget, QTextBrowser, QPushButton, QLabel, QCheckBox
 from PySide6.QtGui import QIcon, QColor, QBrush, QCloseEvent, QFont
 from PySide6.QtCore import Qt, Signal, Slot, QObject, QRect, QCoreApplication
 
@@ -277,10 +277,22 @@ class MainWindow(QMainWindow):
         button_remove_row.setGeometry(QRect(580, 30, 101, 25))
         floor.append(button_remove_row)
 
+        # checkBox_n
+        self.checkBox = QCheckBox(parent)
+        self.checkBox.setObjectName(f"checkBox_{indx}")
+        self.checkBox.setEnabled(False)
+        self.checkBox.setGeometry(QRect(480, 70, 84, 24))
+        self.checkBox.setCheckable(True)
+        self.checkBox.setChecked(False)
+        self.checkBox.setAutoRepeat(False)
+        self.checkBox.setAutoExclusive(False)
+        self.checkBox.setTristate(True)
+        floor.append(self.checkBox)
+
         # label_S
         label_S = QLabel(parent)
         label_S.setObjectName(f"label_S_{indx}")
-        label_S.setGeometry(QRect(480, 130, 101, 31))
+        label_S.setGeometry(QRect(480, 170, 101, 31))
         label_S.setFont(font_bold)
         label_S.setAlignment(Qt.AlignCenter)
         floor.append(label_S)
@@ -288,7 +300,7 @@ class MainWindow(QMainWindow):
         # label_Sdw
         label_Sdw = QLabel(parent)
         label_Sdw.setObjectName(f"label_Sdw_{indx}")
-        label_Sdw.setGeometry(QRect(480, 70, 101, 31))
+        label_Sdw.setGeometry(QRect(480, 110, 101, 31))
         label_Sdw.setFont(font)
         label_Sdw.setAlignment(Qt.AlignCenter)
         floor.append(label_Sdw)
@@ -296,7 +308,7 @@ class MainWindow(QMainWindow):
         # label_Sec
         label_Sec = QLabel(parent)
         label_Sec.setObjectName(f"label_Sec_{indx}")
-        label_Sec.setGeometry(QRect(480, 100, 101, 31))
+        label_Sec.setGeometry(QRect(480, 140, 101, 31))
         label_Sec.setFont(font)
         label_Sec.setAlignment(Qt.AlignCenter)
         floor.append(label_Sec)
@@ -304,19 +316,19 @@ class MainWindow(QMainWindow):
         # area_total
         area_total = QTextBrowser(parent)
         area_total.setObjectName(f"area_total_{indx}")
-        area_total.setGeometry(QRect(590, 130, 91, 31))
+        area_total.setGeometry(QRect(590, 170, 91, 31))
         floor.append(area_total)
 
         # area_dwelling
         area_dwelling = QTextBrowser(parent)
         area_dwelling.setObjectName(f"area_dwelling_{indx}")
-        area_dwelling.setGeometry(QRect(590, 70, 91, 31))
+        area_dwelling.setGeometry(QRect(590, 110, 91, 31))
         floor.append(area_dwelling)
 
         # area_economical
         area_economical = QTextBrowser(parent)
         area_economical.setObjectName(f"area_economical_{indx}")
-        area_economical.setGeometry(QRect(590, 100, 91, 31))
+        area_economical.setGeometry(QRect(590, 140, 91, 31))
         floor.append(area_economical)
 
 
@@ -333,6 +345,7 @@ class MainWindow(QMainWindow):
         ___qtablewidgetitem4.setText(QCoreApplication.translate("MainWindow", u"\u041f\u043b\u043e\u0449\u0430", None))
         ___qtablewidgetitem5 = table.horizontalHeaderItem(5)
         ___qtablewidgetitem5.setText(QCoreApplication.translate("MainWindow", u"\u041e\u0431'\u0454\u043c", None))
+        self.checkBox.setText(QCoreApplication.translate("MainWindow", u"\u0416\u0438\u0442\u043b\u043e\u0432\u0430", None))
 
         button_add_row.setText(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0434\u0430\u0442\u0438 \u0440\u044f\u0434\u043e\u043a", None))
         button_insert_row.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0441\u0442\u0430\u0432\u0438\u0442\u0438 \u0440\u044f\u0434\u043e\u043a", None))
@@ -593,7 +606,10 @@ class Table(QObject):
         if rows:
             self.__table.insertRow(rows[0]+1)
             self.fill_row(rows[0]+1)
+            self.unhighlight_all()
             self.update(self[rows[0]+1][-1])
+        else:
+            self.add_row()
 
     @Slot()
     def highlight_row(self) -> None:
@@ -606,7 +622,7 @@ class Table(QObject):
             for col in range(self.cols):
                 self[row][col].setBackground(QColor(255, 255, 204))
                 self[row][col].setForeground(QColor(0, 0, 0))
-        self.composite_area()
+        self.highlight_composite()
         self.__table.blockSignals(False)
     
     def unhighlight_all(self) -> None:
@@ -620,10 +636,13 @@ class Table(QObject):
     @Slot(QTableWidgetItem)
     def update(self, item: Item) -> None:   # Takes a link to the changed item
         '''The main table update loop'''
-        print("Update triggered")
+        row, col = self[item]
+        print(f"Update triggered by [{row}][{col}]")
+
         try:
             # Temporary disconnecting table updates to prevent recursion
             self.__table.blockSignals(True)
+
             self.count_area()
             self.count_volume()
             self.composite_area()
@@ -676,14 +695,22 @@ class Table(QObject):
                 else:
                     for col in (4, 5):
                         self[row-1, col] = self[row-1][col].value + self[row][col].value
-                        self[row][col].setBackground(QColor(255, 240, 200))     # Highlighting row that is added
-                        self[row][col].setForeground(QColor(0, 0, 0))
-                        self[row-1][col].setBackground(QColor(220, 255, 220))   # Highlighting row to which is added with different color
-                        self[row-1][col].setForeground(QColor(0, 0, 0))
-            if self[row, 0].startswith('-'):
+            self.highlight_composite()
+
+    def highlight_composite(self):
+        for row in range(self.rows-1, -1, -1):
+            if self[row, 0].startswith('+'):
+                for col in (4, 5):
+                    self[row][col].setBackground(QColor(255, 240, 200))     # Highlighting row that is added
+                    self[row][col].setForeground(QColor(0, 0, 0))
+                    self[row-1][col].setBackground(QColor(220, 255, 220))   # Highlighting row to which is added with different color
+                    self[row-1][col].setForeground(QColor(0, 0, 0))
+            elif self[row, 0].startswith('-'):
                 for col in (4, 5):
                     self[row][col].setBackground(QColor(255, 200, 200))     # Highlighting row that is subtracted with another color
                     self[row][col].setForeground(QColor(0, 0, 0))
+                    self[row-1][col].setBackground(QColor(220, 255, 220))   # Highlighting row to which is added with different color
+                    self[row-1][col].setForeground(QColor(0, 0, 0))
 
     def load(self, matrix: Iterable[Iterable]) -> None:
         '''Loading table from matrix'''
