@@ -114,7 +114,7 @@ class Ui_MainWindow(object):
         self.checkBox.setChecked(False)
         self.checkBox.setAutoRepeat(False)
         self.checkBox.setAutoExclusive(False)
-        self.checkBox.setTristate(True)
+        self.checkBox.setTristate(False)
         self.tabWidget.addTab(self.tab, "")
         self.tab_2 = QWidget()
         self.tab_2.setObjectName(u"tab_2")

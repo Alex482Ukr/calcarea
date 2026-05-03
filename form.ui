@@ -282,7 +282,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
        <bool>false</bool>
       </property>
       <property name="tristate">
-       <bool>true</bool>
+       <bool>false</bool>
       </property>
      </widget>
     </widget>

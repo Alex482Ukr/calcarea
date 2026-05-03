@@ -35,11 +35,12 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(icon)
 
         # Setting up table
-        self.table = Table(self.ui.tableWidget, dw_chars=frozenset(('A', 'a', 'А', 'а')))
+        self.table = Table(self.ui.tableWidget, dw_checkbox=self.ui.checkBox, dw_chars=frozenset(('A', 'a', 'А', 'а')))
         self.table.area_sum_changed.connect(self.connect_area_widgets((self.ui.area_total, self.ui.area_dwelling, self.ui.area_economical)))
         self.ui.button_add_row.clicked.connect(self.table.add_row)
         self.ui.button_remove_row.clicked.connect(self.table.remove_current_row)
         self.ui.button_insert_row.clicked.connect(self.table.insert_after_current_row)
+        self.ui.checkBox.checkStateChanged.connect(self.table.dw_change)
 
         # Setting up actions
         self.ui.actionOpen.triggered.connect(self.open_file)
@@ -247,6 +248,18 @@ class MainWindow(QMainWindow):
         font_bold = QFont()
         font_bold.setPointSize(12)
         font_bold.setBold(True)
+        
+        # checkBox_n
+        checkBox = QCheckBox(parent)
+        checkBox.setObjectName(f"checkBox_{indx}")
+        checkBox.setEnabled(False)
+        checkBox.setGeometry(QRect(480, 70, 84, 24))
+        checkBox.setCheckable(True)
+        checkBox.setChecked(False)
+        checkBox.setAutoRepeat(False)
+        checkBox.setAutoExclusive(False)
+        checkBox.setTristate(False)
+        floor.append(checkBox)
 
         # tableWidget
         table = QTableWidget(parent)
@@ -257,7 +270,7 @@ class MainWindow(QMainWindow):
         table.setGeometry(QRect(0, 0, 461, 291))
         table.horizontalHeader().setDefaultSectionSize(70)
         table.show()
-        table_obj = Table(table, dw_chars=frozenset(('Ж', 'ж')))
+        table_obj = Table(table, dw_checkbox=checkBox, dw_chars=frozenset(('Ж', 'ж')))
 
         # button_add_row
         button_add_row = QPushButton(parent)
@@ -276,18 +289,6 @@ class MainWindow(QMainWindow):
         button_remove_row.setObjectName(f"button_remove_row_{indx}")
         button_remove_row.setGeometry(QRect(580, 30, 101, 25))
         floor.append(button_remove_row)
-
-        # checkBox_n
-        self.checkBox = QCheckBox(parent)
-        self.checkBox.setObjectName(f"checkBox_{indx}")
-        self.checkBox.setEnabled(False)
-        self.checkBox.setGeometry(QRect(480, 70, 84, 24))
-        self.checkBox.setCheckable(True)
-        self.checkBox.setChecked(False)
-        self.checkBox.setAutoRepeat(False)
-        self.checkBox.setAutoExclusive(False)
-        self.checkBox.setTristate(True)
-        floor.append(self.checkBox)
 
         # label_S
         label_S = QLabel(parent)
@@ -345,7 +346,7 @@ class MainWindow(QMainWindow):
         ___qtablewidgetitem4.setText(QCoreApplication.translate("MainWindow", u"\u041f\u043b\u043e\u0449\u0430", None))
         ___qtablewidgetitem5 = table.horizontalHeaderItem(5)
         ___qtablewidgetitem5.setText(QCoreApplication.translate("MainWindow", u"\u041e\u0431'\u0454\u043c", None))
-        self.checkBox.setText(QCoreApplication.translate("MainWindow", u"\u0416\u0438\u0442\u043b\u043e\u0432\u0430", None))
+        checkBox.setText(QCoreApplication.translate("MainWindow", u"\u0416\u0438\u0442\u043b\u043e\u0432\u0430", None))
 
         button_add_row.setText(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0434\u0430\u0442\u0438 \u0440\u044f\u0434\u043e\u043a", None))
         button_insert_row.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0441\u0442\u0430\u0432\u0438\u0442\u0438 \u0440\u044f\u0434\u043e\u043a", None))
@@ -386,6 +387,7 @@ class MainWindow(QMainWindow):
         button_add_row.clicked.connect(table_obj.add_row)
         button_insert_row.clicked.connect(table_obj.insert_after_current_row)
         button_remove_row.clicked.connect(table_obj.remove_current_row)
+        checkBox.checkStateChanged.connect(table_obj.dw_change)
 
         for widget in floor:
             widget.show()
@@ -503,14 +505,16 @@ class Table(QObject):
     '''An interface to operate QTableWidgets'''
     area_sum_changed = Signal(tuple)    # Signal emitted when area sums are changed
 
-    def __init__(self, widget: QTableWidget, dw_chars=frozenset(('A', 'a', 'А', 'а', 'Ж', 'ж'))) -> None:
+    def __init__(self, widget: QTableWidget, dw_checkbox: QCheckBox, dw_chars=frozenset(('A', 'a', 'А', 'а', 'Ж', 'ж'))) -> None:
         super().__init__()
         self.__table = widget
         self.__table.itemChanged.connect(self.update)
         self.__table.itemSelectionChanged.connect(self.highlight_row)
         self.__table.itemSelectionChanged.connect(self.dw_checkbox_change_state)
-
+        
+        self.dw_checkbox = dw_checkbox
         self.dw_chars = dw_chars
+        self.dw_rows = set()
         self.hrows = set()
     
     def __getitem__(self, indx: int | Iterable[int] | Item) -> tuple[Item] | (str | Dec) | tuple[int, int]:
@@ -568,7 +572,33 @@ class Table(QObject):
     
     @Slot()
     def dw_checkbox_change_state(self):
-        pass
+        self.dw_checkbox.blockSignals(True)
+        if not self.hrows:
+            self.dw_checkbox.setChecked(False)
+            self.dw_checkbox.setEnabled(False)
+        else:
+            self.dw_checkbox.setEnabled(True)
+            self.dw_checkbox.setChecked(False)
+            self.dw_checkbox.setTristate(False)
+            for row in self.hrows:
+                if row in self.dw_rows:
+                    self.dw_checkbox.setChecked(True)
+                elif self.dw_checkbox.isChecked():
+                    self.dw_checkbox.setCheckState(Qt.CheckState(1))
+                    break
+        self.dw_checkbox.blockSignals(False)
+
+    @Slot()
+    def dw_change(self):
+        self.dw_checkbox.setTristate(False)
+        state = self.dw_checkbox.checkState().value
+        if state == 0:
+            for row in self.hrows:
+                self.dw_rows.discard(row)
+        else:
+            for row in self.hrows:
+                self.dw_rows.add(row)
+        self.highlight_row()
 
     def fill_row(self, row: int) -> None:
         '''Filling row with items with default values'''
@@ -628,6 +658,7 @@ class Table(QObject):
                 self[row][col].setBackground(QColor(255, 255, 204))
                 self[row][col].setForeground(QColor(0, 0, 0))
         self.highlight_composite()
+        self.highlight_dw()
         self.__table.blockSignals(False)
     
     def unhighlight_all(self) -> None:
@@ -637,6 +668,11 @@ class Table(QObject):
                 self[row][col].setBackground(QBrush())
                 self[row][col].setForeground(QBrush())
         self.hrows = set()
+    
+    def highlight_dw(self):
+        for row in self.dw_rows:
+            self[row][0].setBackground(QColor(114, 92, 52))
+            self[row][0].setForeground(QColor(0, 0, 0))
 
     @Slot(QTableWidgetItem)
     def update(self, item: Item) -> None:   # Takes a link to the changed item
