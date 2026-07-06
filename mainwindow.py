@@ -5,7 +5,7 @@ from decimal import Decimal as Dec
 from json import dump, load
 from os.path import exists
 
-from typing import Any, Iterator, Iterable
+from typing import Any, Iterator, Iterable, SupportsIndex
 from types import FunctionType
 
 from keyboard import add_hotkey
@@ -18,8 +18,7 @@ from PySide6.QtCore import Qt, Signal, Slot, QObject, QRect, QCoreApplication
 
 # Important:
 # You need to run the following command to generate the ui_form.py file
-#     pyside6-uic form.ui -o ui_form.py, or
-#     pyside2-uic form.ui -o ui_form.py
+#     pyside6-uic form.ui -o ui_form.py
 from ui_form import Ui_MainWindow
 
 class MainWindow(QMainWindow):
@@ -46,7 +45,7 @@ class MainWindow(QMainWindow):
         self.ui.actionOpen.triggered.connect(self.open_file)
         self.ui.actionSave.triggered.connect(self.save_file)
         self.ui.actionSaveAs.triggered.connect(self.save_as_file)
-        self.ui.actionExport.triggered.connect(self.export_xlsx)  # not used
+        # self.ui.actionExport.triggered.connect(self.export_xlsx)  # not used
 
         # Implementing 'Tab' to add new row
         try:
@@ -60,14 +59,15 @@ class MainWindow(QMainWindow):
         self.ui.button_insert_floor.clicked.connect(self.insert_floor)
 
         # Current file you are working on, must be a path (full or relative)
-        self.current_file = None
+        self.current_file: str = None
 
         # List of floors: 
-        # list(tuple(Table, button_add_row, button_insert_row, button_remove_row, label_S, label_Sdw, label_Sec, area_total, area_dwelling, area_economical), ...)
-        self.floors = []
+        # list(tuple(Table, checkBox, button_add_row, button_insert_row, button_remove_row, 
+        #               label_S, label_Sdw, label_Sec, area_total, area_dwelling, area_economical), ...)
+        self.floors: list[tuple] = []
         self.ui.tabWidget_floors.removeTab(0)   # Removing first demo tab (Floor n)
 
-        # Open with this program
+        # "Open with" implementation
         if len(sys.argv) > 1:
             file = sys.argv[1]
             if exists(file):
@@ -89,7 +89,7 @@ class MainWindow(QMainWindow):
         return slot
     
     @Slot()
-    def open_file(self, path=None) -> None:
+    def open_file(self, path: str = None) -> None:
         '''Load tables from file'''
 
         if not path:
@@ -152,20 +152,20 @@ class MainWindow(QMainWindow):
             self.save_file()
             return 'Success'
         
-    @Slot()
-    def export_xlsx(self) -> None:
-        '''Ask filename to export as a .xlsx document'''
-        if self.ask_save() == "Ignore":
-            return
+    # @Slot()
+    # def export_xlsx(self) -> None:
+    #     '''Ask filename to export as a .xlsx document'''
+    #     if self.ask_save() == "Ignore":
+    #         return
 
-        default_path = self.current_file.split('.')[0] + '.xlsx' if self.current_file else "export.xlsx"
-        path = QFileDialog.getSaveFileName(parent=self, 
-                                           caption="Експортувати як",
-                                           dir=default_path,
-                                           filter="Таблиця Excel (*.xlsx);;Всі файли (*.*)",
-                                           )[0]
-        if path:
-            self.table.write_xlsx(path)
+    #     default_path = self.current_file.split('.')[0] + '.xlsx' if self.current_file else "export.xlsx"
+    #     path = QFileDialog.getSaveFileName(parent=self, 
+    #                                        caption="Експортувати як",
+    #                                        dir=default_path,
+    #                                        filter="Таблиця Excel (*.xlsx);;Всі файли (*.*)",
+    #                                        )[0]
+    #     if path:
+    #         self.table.write_xlsx(path)
 
     @Slot()
     def add_floor(self) -> None:
@@ -174,7 +174,7 @@ class MainWindow(QMainWindow):
         self.floors.append(self.create_floor(i))
     
     @Slot()
-    def remove_floor(self):
+    def remove_floor(self) -> None:
         '''Deleting current floor'''
         i = self.ui.tabWidget_floors.currentIndex()
         if i != -1:
@@ -183,7 +183,7 @@ class MainWindow(QMainWindow):
             self.enumerate_floors()
     
     @Slot()
-    def insert_floor(self):
+    def insert_floor(self) -> None:
         '''Inserting new floor after current'''
         i = self.ui.tabWidget_floors.currentIndex()+1
         self.floors.insert(i, self.create_floor(i))
@@ -195,7 +195,7 @@ class MainWindow(QMainWindow):
             self.ui.tabWidget_floors.setTabText(i, f"Поверх {i+1}")
     
     @Slot(tuple)
-    def sum_floors(self, areas: tuple[Dec, Dec]):
+    def sum_floors(self, areas: tuple[Dec, Dec]) -> None:
         '''Displaying area sum for all floors'''
         sum_total, sum_dwelling, sum_economical = [Dec('0')]*3
 
@@ -216,19 +216,19 @@ class MainWindow(QMainWindow):
 
         if table and item:
             if self.current_item() == table[-1][-1]:
-                table.add_row()
+                self.ui.button_add_row.click()  # Calls self.add_row().
+                # Could've just write self.add_row() 
+                # but it somehow triggers updates frantically if running without a debug breakpoint.
     
     def current_item(self) -> QTableWidgetItem | None:
         '''Returns first currently selected item'''
-
         table = self.current_table()
         if table:
             items = table.selectedItems
             return items[0] if items else None
     
-    def current_table(self):
+    def current_table(self) -> Table | None:
         '''Returns current table'''
-
         tab1 = self.ui.tabWidget.currentIndex()
         tab2 = self.ui.tabWidget_floors.currentIndex()
         if tab1 == 0:
@@ -236,12 +236,13 @@ class MainWindow(QMainWindow):
         elif self.floors:
             return self.floors[tab2][0]
     
-    def create_floor(self, indx: int) -> tuple[QTableWidget, QPushButton, QPushButton, QPushButton, QLabel, QLabel, QLabel, QTextBrowser, QTextBrowser, QTextBrowser]:
+    def create_floor(self, indx: int) -> tuple[QTableWidget, QCheckBox, QPushButton, QPushButton, QPushButton, 
+                                               QLabel, QLabel, QLabel, QTextBrowser, QTextBrowser, QTextBrowser]:
         '''Creates new floor'''
-
         self.ui.tabWidget_floors.insertTab(indx, QWidget(), QIcon(), f'Поверх {indx+1}')
         parent = self.ui.tabWidget_floors.widget(indx)
-        floor = []
+        floor: list[QTableWidget, QCheckBox, QPushButton, QPushButton, QPushButton, 
+                    QLabel, QLabel, QLabel, QTextBrowser, QTextBrowser, QTextBrowser] = []
 
         font = QFont()
         font.setPointSize(12)
@@ -249,7 +250,7 @@ class MainWindow(QMainWindow):
         font_bold.setPointSize(12)
         font_bold.setBold(True)
         
-        # checkBox_n
+        # checkBox
         checkBox = QCheckBox(parent)
         checkBox.setObjectName(f"checkBox_{indx}")
         checkBox.setEnabled(False)
@@ -392,12 +393,11 @@ class MainWindow(QMainWindow):
         for widget in floor:
             widget.show()
 
-        floor.insert(0, table_obj)
+        floor.insert(0, table_obj)  # Table object always comes first
         return tuple(floor)
     
     def closeEvent(self, event: QCloseEvent) -> None:
         '''Trigger saving dialog before closing program'''
-
         if self.ask_save() == 'Accept':
             event.accept()
         else:
@@ -405,7 +405,6 @@ class MainWindow(QMainWindow):
     
     def ask_save(self) -> str:
         '''Saving dialog'''
-
         while True:
             if self.current_file or len(self.floors) != 0 or self.table.rows:
                 dlg = QMessageBox(self)
@@ -427,7 +426,7 @@ class MainWindow(QMainWindow):
                 
 
 class Item(QTableWidgetItem):
-    def __init__(self, value_type, value=None, rounding=None, *args, **kwargs) -> None:
+    def __init__(self, value_type: type, value: str | Dec = None, rounding: SupportsIndex = None, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.value_type = value_type
         self.rounding = rounding
@@ -481,7 +480,7 @@ class Item(QTableWidgetItem):
         return text
     
     @staticmethod
-    def round(num: Dec, rounding: int) -> Dec:
+    def round(num: Dec, rounding: SupportsIndex) -> Dec:
         '''Rounding to the given number of decimal places'''
         num *= Dec('1.000000001')   # 0.5 rounding to 1
         return round(num, rounding)
@@ -512,9 +511,9 @@ class Table(QObject):
         self.__table.itemSelectionChanged.connect(self.highlight_row)
         self.__table.itemSelectionChanged.connect(self.dw_checkbox_change_state)
         
-        self.dw_checkbox = dw_checkbox
-        self.dw_rows = set()
-        self.hrows = set()
+        self.dw_checkbox = dw_checkbox  # Dwelling area toggle widget
+        self.dw_rows: set[int] = set()    # Indicies of rows marked as "Dwelling area"
+        self.hrows: set[int] = set()    # Highlighted rows
     
     def __getitem__(self, indx: int | Iterable[int] | Item) -> tuple[Item] | (str | Dec) | tuple[int, int]:
         '''Return row by given index
@@ -570,40 +569,40 @@ class Table(QObject):
         self.rows += 1
     
     @Slot()
-    def dw_checkbox_change_state(self):
+    def dw_checkbox_change_state(self) -> None:
         self.dw_checkbox.blockSignals(True)
-        if not self.hrows:
+        self.dw_checkbox.setTristate(False) # Disable middle position
+        if not self.hrows:  # If no rows are highlighted disable checkbox
             self.dw_checkbox.setChecked(False)
             self.dw_checkbox.setEnabled(False)
         else:
             self.dw_checkbox.setEnabled(True)
             self.dw_checkbox.setChecked(False)
-            self.dw_checkbox.setTristate(False)
-            dw = False
-            ec = False
+            dw = False  # found a row with dwelling area 
+            ec = False  # found a row with economical area
             for row in self.hrows:
                 if row in self.dw_rows:
                     dw = True
-                    # self.dw_checkbox.setChecked(True)
                 else:
                     ec = True
                 if dw and ec:
-                    self.dw_checkbox.setCheckState(Qt.CheckState(1))
+                    self.dw_checkbox.setCheckState(Qt.CheckState(1))    # If both are present set checkbox to middle position
                     break
             else:
                 self.dw_checkbox.setChecked(dw)
         self.dw_checkbox.blockSignals(False)
 
     @Slot()
-    def dw_change(self):
-        self.dw_checkbox.setTristate(False)
-        state = self.dw_checkbox.checkState().value
-        if state == 0:
+    def dw_change(self) -> None:
+        self.dw_checkbox.setTristate(False) # Disable third state
+        state = self.dw_checkbox.checkState().value # Get checkbox state
+        if state == 0:  # If turned off
             for row in self.hrows:
                 self.dw_rows.discard(row)
         else:
             for row in self.hrows:
                 self.dw_rows.add(row)
+                
         self.highlight_row()
 
         self.__table.blockSignals(True)
@@ -613,7 +612,7 @@ class Table(QObject):
     def fill_row(self, row: int) -> None:
         '''Filling row with items with default values'''
 
-        # Temporary disconnecting table updates 
+        # Temporary suppress table updates 
         # to prevent huge amount of errors while filling row
         self.__table.blockSignals(True)
 
@@ -633,7 +632,7 @@ class Table(QObject):
 
     @Slot()
     def remove_current_row(self) -> None:
-        '''Deleting selected row'''
+        '''Deleting selected rows'''
 
         items = list(map(lambda item: self[item], self.__table.selectedItems()))
         for row in map(lambda item: item[0], items[::-1]):
@@ -650,7 +649,7 @@ class Table(QObject):
     @Slot()
     def insert_after_current_row(self) -> None:
         '''Inserts an empty row after the selected one'''
-        rows = list(map(lambda item: self[item][0], self.__table.selectedItems()))
+        rows = list(map(lambda item: self[item][0], self.__table.selectedItems()))  #           
         if rows:
             self.__table.insertRow(rows[0]+1)
             self.fill_row(rows[0]+1)
@@ -738,7 +737,7 @@ class Table(QObject):
                 continue
             sum_ += self[row, 4]
             
-            # Adding item value in dwelling area sum if it's row has character 'A' or 'Ж' in the "Letter" column
+            
             if row in self.dw_rows:
                 sum_a += self[row, 4]
 
@@ -829,3 +828,9 @@ if __name__ == "__main__":
     widget = MainWindow()
     widget.show()
     sys.exit(app.exec())
+
+
+
+# Composite highlight not canceling
+# Indexing moves with row deletion/insertion, causes errors
+# Dwelling state not saving
