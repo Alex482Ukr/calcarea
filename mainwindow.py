@@ -96,7 +96,7 @@ class MainWindow(QMainWindow):
             path = QFileDialog.getOpenFileName(parent=self, 
                                             caption="Відкрити", 
                                             dir='', 
-                                            filter="CalcArea JSON (*.cajs);;JavaScript Object Notation (*.json);;Comma Separated Values (*.csv);;Всі файли (*.*)",
+                                            filter="CalcArea JSON / JavaScript Object Notation (*.cajs *.json);;Comma Separated Values (*.csv);;Всі файли (*.*)",
                                             )[0]
         if path:
             self.table.dw_rows = []
@@ -666,7 +666,6 @@ class Table(QObject):
         self.comp_rows = list()
         items = list(map(lambda row: self[row[0]], self.hrows))
         for row in map(lambda item: item[0], items[::-1]):
-            print(row)
             items_obj = self[row]
             if items_obj[0] in self.dw_rows:
                 self.dw_rows.remove(items_obj[0])
