@@ -56,7 +56,7 @@ class MainWindow(QMainWindow):
         
         self.ui.button_add_floor.clicked.connect(self.add_floor)
         self.ui.button_remove_floor.clicked.connect(self.remove_floor)
-        self.ui.button_insert_floor.clicked.connect(self.insert_floor)
+        # self.ui.button_insert_floor.clicked.connect(self.insert_floor)    # Deprecated
 
         # Current file you are working on, must be a path (full or relative)
         self.current_file: str = None
@@ -208,19 +208,19 @@ class MainWindow(QMainWindow):
         if i != -1:
             self.ui.tabWidget_floors.removeTab(i)
             del self.floors[i]
-            self.enumerate_floors()
+            # self.enumerate_floors()   # Deprecated
     
-    @Slot()
-    def insert_floor(self) -> None:
-        '''Inserting new floor after current'''
-        i = self.ui.tabWidget_floors.currentIndex()+1
-        self.floors.insert(i, self.create_floor(i))
-        self.enumerate_floors()
+    # @Slot()                               Deprecated
+    # def insert_floor(self) -> None:
+    #     '''Inserting new floor after current'''
+    #     i = self.ui.tabWidget_floors.currentIndex()+1
+    #     self.floors.insert(i, self.create_floor(i))
+    #     self.enumerate_floors()
 
-    def enumerate_floors(self) -> None:
-        '''Reset numberation of floors'''
-        for i in range(len(self.floors)):
-            self.ui.tabWidget_floors.setTabText(i, f"Поверх {i+1}")
+    # def enumerate_floors(self) -> None:   Deprecated
+    #     '''Reset numberation of floors'''
+    #     for i in range(len(self.floors)):
+    #         self.ui.tabWidget_floors.setTabText(i, f"Поверх {i+1}")
     
     @Slot(tuple)
     def sum_floors(self, areas: tuple[Dec, Dec]) -> None:
