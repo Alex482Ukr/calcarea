@@ -663,12 +663,11 @@ class Table(QObject):
     @Slot()
     def remove_current_row(self) -> None:
         '''Deleting selected rows'''
-        items = list(map(lambda item: self[item], self.__table.selectedItems()))
+        self.comp_rows = list()
+        items = list(map(lambda row: self[row[0]], self.hrows))
         for row in map(lambda item: item[0], items[::-1]):
+            print(row)
             items_obj = self[row]
-            if items_obj[4] in self.comp_rows:
-                self.comp_rows.remove(items_obj[4])
-                self.comp_rows.remove(items_obj[5])
             if items_obj[0] in self.dw_rows:
                 self.dw_rows.remove(items_obj[0])
             
@@ -683,14 +682,16 @@ class Table(QObject):
 
     @Slot()
     def insert_after_current_row(self) -> None:
-        '''Inserts an empty row after the selected one'''
+        '''Inserts an empty row after the selected one or insert at the top if no selected rows'''
         rows = list(map(lambda item: self[item][0], self.__table.selectedItems()))  #           
         if rows:
             self.__table.insertRow(rows[0]+1)
             self.fill_row(rows[0]+1)
             self.update(self[rows[0]+1][-1])
         else:
-            self.add_row()
+            self.__table.insertRow(0)
+            self.fill_row(0)
+            self.update(self[0][-1])
 
     @Slot()
     def highlight_row(self) -> None:
