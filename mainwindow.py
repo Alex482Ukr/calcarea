@@ -512,8 +512,9 @@ class Table(QObject):
         self.__table.itemSelectionChanged.connect(self.dw_checkbox_change_state)
         
         self.dw_checkbox = dw_checkbox  # Dwelling area toggle widget
-        self.dw_rows: set[int] = set()    # Indicies of rows marked as "Dwelling area"
-        self.hrows: set[int] = set()    # Highlighted rows
+        self.dw_rows: list[int] = list()    # Indices of rows marked as "Dwelling area"
+        self.hrows: tuple[tuple[Item]] = tuple()    # Highlighted rows
+        self.comp_rows: list[Item] = list()
     
     def __getitem__(self, indx: int | Iterable[int] | Item) -> tuple[Item] | (str | Dec) | tuple[int, int]:
         '''Return row by given index
@@ -581,7 +582,7 @@ class Table(QObject):
             dw = False  # found a row with dwelling area 
             ec = False  # found a row with economical area
             for row in self.hrows:
-                if row in self.dw_rows:
+                if row[0] in self.dw_rows:
                     dw = True
                 else:
                     ec = True
@@ -598,10 +599,11 @@ class Table(QObject):
         state = self.dw_checkbox.checkState().value # Get checkbox state
         if state == 0:  # If turned off
             for row in self.hrows:
-                self.dw_rows.discard(row)
+                self.dw_rows.remove(row[0])
         else:
             for row in self.hrows:
-                self.dw_rows.add(row)
+                if row[0] not in self.dw_rows:
+                    self.dw_rows.append(row[0])
                 
         self.highlight_row()
 
@@ -636,7 +638,13 @@ class Table(QObject):
 
         items = list(map(lambda item: self[item], self.__table.selectedItems()))
         for row in map(lambda item: item[0], items[::-1]):
-            self.dw_rows.discard(row)
+            items_obj = self[row]
+            if items_obj[4] in self.comp_rows:
+                self.comp_rows.remove(items_obj[4])
+                self.comp_rows.remove(items_obj[5])
+            if items_obj[0] in self.dw_rows:
+                self.dw_rows.remove(items_obj[0])
+            
             self.__table.removeRow(row)
 
         if items:
@@ -663,11 +671,12 @@ class Table(QObject):
         self.__table.blockSignals(True)
         self.unhighlight()
 
-        self.hrows = set(map(lambda item: self[item][0], self.__table.selectedItems()))
+        rows_i = set(map(lambda item: self[item][0], self.__table.selectedItems())) # Get indices of rows to highlight
+        self.hrows = tuple(self[row] for row in rows_i)  # Get tuples of items to highlight
         for row in self.hrows:
-            for col in range(self.cols):
-                self[row][col].setBackground(QColor(255, 255, 204))
-                self[row][col].setForeground(QColor(0, 0, 0))
+            for item in row:
+                item.setBackground(QColor(255, 255, 204))
+                item.setForeground(QColor(0, 0, 0))
         self.highlight_composite()
         self.highlight_dw()
         self.__table.blockSignals(False)
@@ -675,10 +684,10 @@ class Table(QObject):
     def unhighlight(self) -> None:
         '''Unhighliting all selected rows'''
         for row in self.hrows:
-            for col in range(self.cols):
-                self[row][col].setBackground(QBrush())
-                self[row][col].setForeground(QBrush())
-        self.hrows = set()
+            for item in row:
+                item.setBackground(QBrush())
+                item.setForeground(QBrush())
+        self.hrows = tuple()
 
     def unhighlight_all(self) -> None:
         '''Unhighliting all rows in the table'''
@@ -686,12 +695,12 @@ class Table(QObject):
             for col in range(self.cols):
                 self[row][col].setBackground(QBrush())
                 self[row][col].setForeground(QBrush())
-        self.hrows = set()
+        self.hrows = tuple()
     
     def highlight_dw(self):
-        for row in self.dw_rows:
-            self[row][0].setBackground(QColor(114, 92, 52))
-            self[row][0].setForeground(QColor(0, 0, 0))
+        for item in self.dw_rows:
+            item.setBackground(QColor(114, 92, 52))
+            item.setForeground(QColor(0, 0, 0))
 
     @Slot(QTableWidgetItem)
     def update(self, item: Item = None) -> None:   # Takes a link to the changed item
@@ -699,7 +708,8 @@ class Table(QObject):
         if item:
             row, col = self[item]
             print(f"Update triggered by [{row}][{col}]")
-
+        else:
+            print("Update triggered by no item")
         try:
             # Temporary disconnecting table updates to prevent recursion
             self.__table.blockSignals(True)
@@ -738,7 +748,7 @@ class Table(QObject):
             sum_ += self[row, 4]
             
             
-            if row in self.dw_rows:
+            if self[row][0] in self.dw_rows:
                 sum_a += self[row, 4]
 
         # Emits the signal with tuple of counted sums as an argument
@@ -759,6 +769,7 @@ class Table(QObject):
             self.highlight_composite()
 
     def highlight_composite(self):
+        self.unhighlight_composite()
         for row in range(self.rows-1, -1, -1):
             if self[row, 0].startswith('+'):
                 for col in (4, 5):
@@ -766,12 +777,33 @@ class Table(QObject):
                     self[row][col].setForeground(QColor(0, 0, 0))
                     self[row-1][col].setBackground(QColor(220, 255, 220))   # Highlighting row to which is added with different color
                     self[row-1][col].setForeground(QColor(0, 0, 0))
+
+                    for r in (row, row-1):
+                            item = self[r][col]
+                            if item not in self.comp_rows:
+                                self.comp_rows.append(item)
+
             elif self[row, 0].startswith('-'):
                 for col in (4, 5):
                     self[row][col].setBackground(QColor(255, 200, 200))     # Highlighting row that is subtracted with another color
                     self[row][col].setForeground(QColor(0, 0, 0))
                     self[row-1][col].setBackground(QColor(220, 255, 220))   # Highlighting row to which is added with different color
                     self[row-1][col].setForeground(QColor(0, 0, 0))
+
+                    for r in (row, row-1):
+                            item = self[r][col]
+                            if item not in self.comp_rows:
+                                self.comp_rows.append(item)
+
+    def unhighlight_composite(self):
+        for item in self.comp_rows:
+            if any((item in row for row in self.hrows)):
+                item.setBackground(QColor(255, 255, 204))
+                item.setForeground(QColor(0, 0, 0))
+            else:
+                item.setBackground(QBrush())
+                item.setForeground(QBrush())
+        self.comp_rows = []
 
     def load(self, matrix: Iterable[Iterable]) -> None:
         '''Loading table from matrix'''
@@ -831,6 +863,4 @@ if __name__ == "__main__":
 
 
 
-# Composite highlight not canceling
-# Indexing moves with row deletion/insertion, causes errors
 # Dwelling state not saving
