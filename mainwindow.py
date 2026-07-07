@@ -651,7 +651,11 @@ class Table(QObject):
         for col in range(1, 4): # Filling "Width", "Length" and "Height" columns with rounding to hundredths
             self.__table.setItem(row, col, Item(Dec, rounding=2))
         
-        self.__table.setItem(row, 4, Item(Dec, rounding=1)) # Filling "Area" column with rounding to tenths
+        area_item = Item(Dec, rounding=1)
+        area_font = area_item.font()
+        area_font.setBold(True)
+        area_item.setFont(area_font)
+        self.__table.setItem(row, 4, area_item) # Filling "Area" column with rounding to tenths
         self.__table.setItem(row, 5, Item(Dec, rounding=0)) # Filling "Volume" column with rounding to whole numbers
 
         for col in (4, 5):   # Setting "Area" and "Volume" columns to not editable

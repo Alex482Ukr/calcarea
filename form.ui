@@ -87,6 +87,13 @@
            <property name="text">
             <string>Площа</string>
            </property>
+           <property name="font">
+            <font>
+             <italic>false</italic>
+             <bold>true</bold>
+             <underline>false</underline>
+            </font>
+           </property>
           </column>
           <column>
            <property name="text">
@@ -338,7 +345,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
               </attribute>
               <column>
                <property name="text">
-                <string>Буква</string>
+                <string>Номер</string>
                </property>
               </column>
               <column>
@@ -359,6 +366,11 @@ li.checked::marker { content: &quot;\2612&quot;; }
               <column>
                <property name="text">
                 <string>Площа</string>
+               </property>
+               <property name="font">
+                <font>
+                 <bold>true</bold>
+                </font>
                </property>
               </column>
               <column>
@@ -526,7 +538,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
                 </font>
                </property>
                <property name="text">
-                <string>Sгосп</string>
+                <string>Sпідсобна</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -700,7 +712,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
             </font>
            </property>
            <property name="text">
-            <string>Sгосп</string>
+            <string>Sпідсобна</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignmentFlag::AlignCenter</set>
