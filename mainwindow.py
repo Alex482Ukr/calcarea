@@ -663,7 +663,6 @@ class Table(QObject):
     @Slot()
     def remove_current_row(self) -> None:
         '''Deleting selected rows'''
-
         items = list(map(lambda item: self[item], self.__table.selectedItems()))
         for row in map(lambda item: item[0], items[::-1]):
             items_obj = self[row]
@@ -675,10 +674,10 @@ class Table(QObject):
             
             self.__table.removeRow(row)
 
-        if items:
-            item = items[0]
-            if item[0] < self.rows:
-                self[item[0]][item[1]].setSelected(True)
+        # if items:
+        #     item = items[0]
+        #     if item[0] < self.rows:
+        #         self[item[0]][item[1]].setSelected(True)
 
         self.update()
 
@@ -713,8 +712,11 @@ class Table(QObject):
         '''Unhighliting all selected rows'''
         for row in self.hrows:
             for item in row:
-                item.setBackground(QBrush())
-                item.setForeground(QBrush())
+                try:
+                    item.setBackground(QBrush())
+                    item.setForeground(QBrush())
+                except RuntimeError:
+                    pass
         self.hrows = tuple()
 
     def unhighlight_all(self) -> None:
@@ -830,38 +832,57 @@ class Table(QObject):
 
     def unhighlight_composite(self):
         for item in self.comp_rows:
-            if any((item in row for row in self.hrows)):
-                item.setBackground(QColor(255, 255, 204))
-                item.setForeground(QColor(0, 0, 0))
-            else:
-                item.setBackground(QBrush())
-                item.setForeground(QBrush())
+            try:
+                if any((item in row for row in self.hrows)):
+                    item.setBackground(QColor(255, 255, 204))
+                    item.setForeground(QColor(0, 0, 0))
+                else:
+                    item.setBackground(QBrush())
+                    item.setForeground(QBrush())
+            except RuntimeError:    # Occurs when stumbling upon a reference to already deleted Item object
+                pass
         self.comp_rows = []
 
     def load_json(self, matrix: Iterable[Iterable]) -> None:    # For legacy .json support
         '''Loading table from matrix'''
-
-        self.rows = len(matrix)
-        if matrix:
-            for row in range(len(matrix)):
-                for col in range(len(matrix[0])):
-                    self[row, col] = matrix[row][col]
+        try:
+            self.__table.itemChanged.disconnect(self.update)    # The only found way it doesn't cause update on each item
+            self.rows = len(matrix)
+            if matrix:
+                for row in range(len(matrix)):
+                    for col in range(len(matrix[0])):
+                        self[row, col] = matrix[row][col]
+        finally:
+            self.__table.itemChanged.connect(self.update)
+            self.update()
     
     def load(self, table: dict) -> None:
         '''Loading table from dictionary'''
-        matrix = table["table"]
-        self.rows = len(matrix)
-        if matrix:
-            for row in range(len(matrix)):
-                for col in range(len(matrix[0])):
-                    self[row, col] = matrix[row][col]
-        self.dw_rows = list(self[row_i][0] for row_i in table["dw_rows"])
-        self.dw_checkbox_change_state()
-        self.highlight_dw()
+        try:
+            self.__table.itemChanged.disconnect(self.update)    # The only found way it doesn't cause update on each item
+
+            matrix = table["table"]
+            self.rows = len(matrix)
+            if matrix:
+                for row in range(len(matrix)):
+                    for col in range(len(matrix[0])):
+                        self[row, col] = matrix[row][col]
+            self.dw_rows = list(self[row_i][0] for row_i in table["dw_rows"])
+            self.dw_checkbox_change_state()
+            self.highlight_dw()
+        finally:
+            self.__table.itemChanged.connect(self.update)
+            self.update()
 
     def get_matrix(self) -> tuple[tuple]:
         '''Get matrix of table items'''
-        return tuple(tuple(str(self[row, col]) for col in range(self.cols))[:-2] for row in range(self.rows))
+        try:
+            # Temporary disconnecting table updates to prevent recursion
+            self.__table.blockSignals(True)
+            res = tuple(tuple(str(self[row, col]) for col in range(self.cols))[:-2] for row in range(self.rows))
+        finally:
+            self.__table.blockSignals(False)
+        return res
     
     # def write_xlsx(self, path: str) -> None:
     #     '''Exporting table to .xlsx (currently not used)'''
@@ -904,7 +925,3 @@ if __name__ == "__main__":
     widget = MainWindow()
     widget.show()
     sys.exit(app.exec())
-
-
-
-#   Too much updates while saving/loading
