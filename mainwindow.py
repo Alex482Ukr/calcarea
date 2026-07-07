@@ -95,11 +95,15 @@ class MainWindow(QMainWindow):
         if not path:
             path = QFileDialog.getOpenFileName(parent=self, 
                                             caption="Відкрити", 
-                                            dir='save.json', 
-                                            filter="JavaScript Object Notation (*.json);;Comma Separated Values (*.csv);;Всі файли (*.*)",
+                                            dir='', 
+                                            filter="CalcArea JSON (*.cajs);;JavaScript Object Notation (*.json);;Comma Separated Values (*.csv);;Всі файли (*.*)",
                                             )[0]
         if path:
+            self.table.dw_rows = []
+            self.table.comp_rows = []
             if path.endswith('.csv'):   # For old save format support
+                self.current_file = None
+                self.setWindowTitle("Table Calculator")
                 with open(path, 'rt', encoding='utf-8') as f:
                     rows = tuple(row.split(',') for row in f.read().split('\n'))
                     self.table.rows = len(rows)
@@ -108,13 +112,13 @@ class MainWindow(QMainWindow):
                             for col in range(len(rows[0])):
                                 self.table[row, col] = rows[row][col]
                 self.save_as_file()     # Resave with new format
-            else:
-                self.current_file = path
-                self.setWindowTitle(self.current_file)
 
+            elif path.endswith('.json'):   # For old save format support
+                self.current_file = None
+                self.setWindowTitle("Table Calculator")
                 with open(path, 'rt', encoding='utf-8') as f:
                     table, *tables = load(f)
-                    self.table.load(table)
+                    self.table.load_json(table)
 
                     for i in range(len(self.floors)):
                         self.remove_floor()
@@ -122,7 +126,26 @@ class MainWindow(QMainWindow):
 
                     for i in range(len(tables)):
                         self.add_floor()
-                        self.floors[i][0].load(tables[i])
+                        self.floors[i][0].load_json(tables[i])
+                self.sum_floors((0, 0))
+                self.save_as_file()     # Resave with new format
+            else:
+                self.current_file = path
+                self.setWindowTitle(self.current_file)
+                self.table.highlight_row()
+
+                with open(path, 'rt', encoding='utf-8') as f:
+                    table, *tables = load(f)
+                    self.table.load(table)
+                
+                for i in range(len(self.floors)):
+                    self.remove_floor()
+                self.floors = []
+                
+                for i in range(len(tables)):
+                    self.add_floor()
+                    self.floors[i][0].load(tables[i])
+                self.sum_floors((0, 0))
         
     @Slot()
     def save_file(self) -> str:
@@ -130,12 +153,17 @@ class MainWindow(QMainWindow):
 
         if self.current_file:
             with open(self.current_file, 'wt', encoding='utf-8') as f:
-                tables = [self.table.get_matrix()]
-                tables = tables + [floor[0].get_matrix() for floor in self.floors]
+                tables = [{"name": "MAIN", "table": self.table.get_matrix(), "dw_rows": self.save_dw(self.table)}]
+                tables = tables + [{"name": "", "table": floor[0].get_matrix(), "dw_rows": self.save_dw(floor[0])} for floor in self.floors]
                 dump(tuple(tables), f)
             return 'Success'
         else:
             return self.save_as_file()
+    
+    @staticmethod
+    def save_dw(table: Table) -> tuple[int]:
+        return tuple(table[item][0] for item in table.dw_rows)
+
 
     @Slot()
     def save_as_file(self) -> str:
@@ -143,8 +171,8 @@ class MainWindow(QMainWindow):
 
         path = QFileDialog.getSaveFileName(parent=self, 
                                            caption="Зберегти як", 
-                                           dir='save.json', 
-                                           filter="JavaScript Object Notation (*.json);;Всі файли (*.*)",
+                                           dir='save.cajs', 
+                                           filter="CalcArea JSON (*.cajs);;Всі файли (*.*)",
                                            )[0]
         if path:
             self.current_file = path
@@ -701,6 +729,11 @@ class Table(QObject):
         for item in self.dw_rows:
             item.setBackground(QColor(114, 92, 52))
             item.setForeground(QColor(0, 0, 0))
+    
+    def unhighlight_dw(self):
+        for item in self.dw_rows:
+            item.setBackground(QBrush())
+            item.setForeground(QBrush())
 
     @Slot(QTableWidgetItem)
     def update(self, item: Item = None) -> None:   # Takes a link to the changed item
@@ -805,7 +838,7 @@ class Table(QObject):
                 item.setForeground(QBrush())
         self.comp_rows = []
 
-    def load(self, matrix: Iterable[Iterable]) -> None:
+    def load_json(self, matrix: Iterable[Iterable]) -> None:    # For legacy .json support
         '''Loading table from matrix'''
 
         self.rows = len(matrix)
@@ -813,7 +846,18 @@ class Table(QObject):
             for row in range(len(matrix)):
                 for col in range(len(matrix[0])):
                     self[row, col] = matrix[row][col]
-
+    
+    def load(self, table: dict) -> None:
+        '''Loading table from dictionary'''
+        matrix = table["table"]
+        self.rows = len(matrix)
+        if matrix:
+            for row in range(len(matrix)):
+                for col in range(len(matrix[0])):
+                    self[row, col] = matrix[row][col]
+        self.dw_rows = list(self[row_i][0] for row_i in table["dw_rows"])
+        self.dw_checkbox_change_state()
+        self.highlight_dw()
 
     def get_matrix(self) -> tuple[tuple]:
         '''Get matrix of table items'''
@@ -863,4 +907,4 @@ if __name__ == "__main__":
 
 
 
-# Dwelling state not saving
+#   Too much updates while saving/loading
