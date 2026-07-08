@@ -28,7 +28,7 @@ class MainWindow(QMainWindow):
         self.ui.setupUi(self)
 
         # Setting up window title and icon
-        self.setWindowTitle('Calculator')
+        self.setWindowTitle('Table Calculator')
         icon = QIcon()
         icon.addFile('icons/icon.png')
         self.setWindowIcon(icon)
@@ -89,6 +89,7 @@ class MainWindow(QMainWindow):
             dwelling_widget.setText(str(area_dw))
             total_widget.setText(str(area_total))
             economical_widget.setText(str(area_ec))
+
         return slot
     
     @Slot()
@@ -142,7 +143,7 @@ class MainWindow(QMainWindow):
                     table, *tables = load(f)
                     self.table.load(table)
                 
-                for i in range(len(self.floors)):
+                for i in range(len(self.floors)):   # Remove all existing floors
                     self.remove_floor()
                 self.floors = []
                 
@@ -167,13 +168,14 @@ class MainWindow(QMainWindow):
         else:
             return self.save_as_file()
     
-    def sync_floor_list(self):
+    def sync_floor_list(self) -> None:
+        '''Match current tab order with self.floors'''
         self.floors = sorted(self.floors, key=lambda obj: self.ui.tabWidget_floors.indexOf(obj.tab_n))
 
     @staticmethod
     def save_dw(table: Table) -> tuple[int]:
+        '''Get indices of rows, marked as "dwelling"'''
         return tuple(table[item][0] for item in table.dw_rows)
-
 
     @Slot()
     def save_as_file(self) -> str:
@@ -289,7 +291,8 @@ class MainWindow(QMainWindow):
         return floor
     
     @Slot(int)
-    def _on_tab_bar_double_clicked(self, index: int):
+    def _on_tab_bar_double_clicked(self, index: int) -> None:
+        '''Rename a floor by double-clicking'''
         if index < 0:
             return  # Ensure a valid tab was clicked
 
@@ -301,7 +304,9 @@ class MainWindow(QMainWindow):
         editor.selectAll()
         editor.show()
 
-        def finish_editing():
+        @Slot()
+        def finish_editing() -> None:
+            '''Apply changes'''
             new_text = editor.text().strip()
             
             if new_text:
@@ -432,7 +437,7 @@ class Table(QObject):
         self.hrows: tuple[tuple[Item]] = tuple()    # Highlighted rows
         self.comp_rows: list[Item] = list()
 
-        self.letter_default = 'A'
+        self.letter_default: str = 'A'
     
     def __getitem__(self, indx: int | Iterable[int] | Item) -> tuple[Item] | (str | Dec) | tuple[int, int]:
         '''Return row by given index
@@ -489,30 +494,35 @@ class Table(QObject):
     
     @Slot()
     def dw_checkbox_change_state(self) -> None:
-        self.dw_checkbox.blockSignals(True)
-        self.dw_checkbox.setTristate(False) # Disable middle position
-        if not self.hrows:  # If no rows are highlighted disable checkbox
-            self.dw_checkbox.setChecked(False)
-            self.dw_checkbox.setEnabled(False)
-        else:
-            self.dw_checkbox.setEnabled(True)
-            self.dw_checkbox.setChecked(False)
-            dw = False  # found a row with dwelling area 
-            ec = False  # found a row with economical area
-            for row in self.hrows:
-                if row[0] in self.dw_rows:
-                    dw = True
-                else:
-                    ec = True
-                if dw and ec:
-                    self.dw_checkbox.setCheckState(Qt.CheckState(1))    # If both are present set checkbox to middle position
-                    break
+        '''Update state of the checkbox based on selected items'''
+        try:
+            self.dw_checkbox.blockSignals(True)
+
+            self.dw_checkbox.setTristate(False) # Disable middle position
+            if not self.hrows:  # If no rows are highlighted disable checkbox
+                self.dw_checkbox.setChecked(False)
+                self.dw_checkbox.setEnabled(False)
             else:
-                self.dw_checkbox.setChecked(dw)
-        self.dw_checkbox.blockSignals(False)
+                self.dw_checkbox.setEnabled(True)
+                self.dw_checkbox.setChecked(False)
+                dw = False  # found a row with dwelling area 
+                ec = False  # found a row with economical area
+                for row in self.hrows:
+                    if row[0] in self.dw_rows:
+                        dw = True
+                    else:
+                        ec = True
+                    if dw and ec:
+                        self.dw_checkbox.setCheckState(Qt.CheckState(1))    # If both are present set checkbox to middle position
+                        break
+                else:
+                    self.dw_checkbox.setChecked(dw)
+        finally:
+            self.dw_checkbox.blockSignals(False)
 
     @Slot()
     def dw_change(self) -> None:
+        '''Change dwelling state of highlighted rows'''
         self.dw_checkbox.setTristate(False) # Disable third state
         state = self.dw_checkbox.checkState().value # Get checkbox state
         if state == 0:  # If turned off
@@ -525,9 +535,11 @@ class Table(QObject):
                 
         self.highlight_row()
 
-        self.__table.blockSignals(True)
-        self.sum_area()
-        self.__table.blockSignals(False)
+        try:
+            self.__table.blockSignals(True)
+            self.sum_area()
+        finally:
+            self.__table.blockSignals(False)
 
     def fill_row(self, row: int) -> None:
         '''Filling row with items with default values'''
@@ -621,12 +633,14 @@ class Table(QObject):
                 self[row][col].setForeground(QBrush())
         self.hrows = tuple()
     
-    def highlight_dw(self):
+    def highlight_dw(self) -> None:
+        '''Highlight all rows marked "dwelling"'''
         for item in self.dw_rows:
             item.setBackground(QColor(114, 92, 52))
             item.setForeground(QColor(0, 0, 0))
     
-    def unhighlight_dw(self):
+    def unhighlight_dw(self) -> None:
+        '''Unhighlight all rows marked "dwelling"'''
         for item in self.dw_rows:
             item.setBackground(QBrush())
             item.setForeground(QBrush())
@@ -697,7 +711,8 @@ class Table(QObject):
                         self[row-1, col] = self[row-1][col].value + self[row][col].value
             self.highlight_composite()
 
-    def highlight_composite(self):
+    def highlight_composite(self) -> None:
+        '''Highlight items associated with composite area calculation'''
         self.unhighlight_composite()
         for row in range(self.rows-1, -1, -1):
             if self[row, 0].startswith('+'):
@@ -724,7 +739,8 @@ class Table(QObject):
                             if item not in self.comp_rows:
                                 self.comp_rows.append(item)
 
-    def unhighlight_composite(self):
+    def unhighlight_composite(self) -> None:
+        '''Unhighlight items previously highlighted as composite area'''
         for item in self.comp_rows:
             try:
                 if any((item in row for row in self.hrows)):
@@ -738,7 +754,7 @@ class Table(QObject):
         self.comp_rows = []
 
     def load_json(self, matrix: Iterable[Iterable]) -> None:    # For legacy .json support
-        '''Loading table from matrix'''
+        '''Loading table from matrix (.json file type)'''
         try:
             self.__table.itemChanged.disconnect(self.update)    # The only found way it doesn't cause update on each item
             self.rows = len(matrix)
@@ -789,7 +805,7 @@ class Table(QObject):
 
 
 class Floor:
-    def __init__(self, name: str):
+    def __init__(self, name: str) -> None:
         self.setupUi()
         self.retranslateUi()
 
@@ -803,7 +819,8 @@ class Floor:
 
         self.tab_n.setObjectName(name)
 
-    def setupUi(self):
+    def setupUi(self) -> None:
+        '''Set up floor widgets'''
         font1 = QFont()
         font1.setPointSize(12)
 
@@ -895,7 +912,8 @@ class Floor:
         self.tableWidget_n.show()
         self.container_n.show()
 
-    def retranslateUi(self):
+    def retranslateUi(self) -> None:
+        '''Set up text on widgets'''
         ___qtablewidgetitem6 = self.tableWidget_n.horizontalHeaderItem(0)
         ___qtablewidgetitem6.setText(QCoreApplication.translate("MainWindow", u"\u041d\u043e\u043c\u0435\u0440", None))
         ___qtablewidgetitem7 = self.tableWidget_n.horizontalHeaderItem(1)
@@ -940,7 +958,7 @@ class Floor:
         self.label_Sec_n.setText(QCoreApplication.translate("MainWindow", u"S\u043f\u0456\u0434\u0441\u043e\u0431\u043d\u0430", None))
         self.checkBox_n.setText(QCoreApplication.translate("MainWindow", u"\u0416\u0438\u0442\u043b\u043e\u0432\u0430", None))
 
-def excepthook(cls: type, exception: Exception, traceback):
+def excepthook(cls: type, exception: Exception, traceback) -> None:
     '''Catches errors and showing them in dialog box'''
     
     exc_type = cls.__name__                         # Type of the exception (e. g. "ZeroDivisionError")
