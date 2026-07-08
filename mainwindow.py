@@ -12,7 +12,7 @@ from keyboard import add_hotkey
 from pyperclip import copy
 # from openpyxl import Workbook # not used
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidget, QTableWidgetItem, QFileDialog, QMessageBox, QWidget, QTextBrowser, QPushButton, QLabel, QCheckBox, QHBoxLayout, QSizePolicy
+from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidget, QTableWidgetItem, QFileDialog, QMessageBox, QWidget, QTextBrowser, QPushButton, QLabel, QCheckBox, QHBoxLayout, QSizePolicy, QLineEdit
 from PySide6.QtGui import QIcon, QColor, QBrush, QCloseEvent, QFont
 from PySide6.QtCore import Qt, Signal, Slot, QObject, QRect, QCoreApplication, QSize
 
@@ -73,6 +73,9 @@ class MainWindow(QMainWindow):
             if exists(file):
                 self.open_file(path=file)
 
+        # Editable floor names
+        self.ui.tabWidget_floors.tabBarDoubleClicked.connect(self._on_tab_bar_double_clicked)
+
     def connect_area_widgets(self, txt_browsers: tuple[QTextBrowser, QTextBrowser, QTextBrowser]) -> FunctionType:
         '''Returns a Slot that displays given areas in connected text browsers'''
         total_widget, dwelling_widget, economical_widget = txt_browsers
@@ -99,8 +102,9 @@ class MainWindow(QMainWindow):
                                             filter="CalcArea JSON / JavaScript Object Notation (*.cajs *.json);;Comma Separated Values (*.csv);;Всі файли (*.*)",
                                             )[0]
         if path:
+            self.table.unhighlight_dw()
             self.table.dw_rows = []
-            self.table.comp_rows = []
+            self.table.unhighlight_composite()
             if path.endswith('.csv'):   # For old save format support
                 self.current_file = None
                 self.setWindowTitle("Table Calculator")
@@ -143,7 +147,7 @@ class MainWindow(QMainWindow):
                 self.floors = []
                 
                 for i in range(len(tables)):
-                    self.add_floor()
+                    self.add_floor(name=tables[i]["name"])
                     self.floors[i].table_obj.load(tables[i])
                 self.sum_floors((0, 0))
         
@@ -154,7 +158,7 @@ class MainWindow(QMainWindow):
         if self.current_file:
             with open(self.current_file, 'wt', encoding='utf-8') as f:
                 tables = [{"name": "MAIN", "table": self.table.get_matrix(), "dw_rows": self.save_dw(self.table)}]
-                tables = tables + [{"name": "", "table": floor.table_obj.get_matrix(), "dw_rows": self.save_dw(floor.table_obj)} for floor in self.floors]
+                tables = tables + [{"name": floor.tab_n.objectName(), "table": floor.table_obj.get_matrix(), "dw_rows": self.save_dw(floor.table_obj)} for floor in self.floors]
                 dump(tuple(tables), f)
             return 'Success'
         else:
@@ -196,10 +200,14 @@ class MainWindow(QMainWindow):
     #         self.table.write_xlsx(path)
 
     @Slot()
-    def add_floor(self) -> None:
+    def add_floor(self, name=None) -> None:
         '''Adding new floor'''
         i = len(self.floors)
-        self.floors.append(self.create_floor(i))
+        floor = self.create_floor(i)
+        if name:
+            floor.tab_n.setObjectName(name)
+            self.ui.tabWidget_floors.setTabText(i, name)
+        self.floors.append(floor)
     
     @Slot()
     def remove_floor(self) -> None:
@@ -264,15 +272,39 @@ class MainWindow(QMainWindow):
         elif self.floors:
             return self.floors[tab2].table_obj
     
-    def create_floor(self, indx: int) -> Floor:
+    def create_floor(self, indx: int, name: str = 'xxx') -> Floor:
         '''Creates new floor'''
-        floor = Floor()
-        self.ui.tabWidget_floors.insertTab(indx, floor.tab_n, QIcon(), floor.name)
+        floor = Floor(name)
+        self.ui.tabWidget_floors.insertTab(indx, floor.tab_n, QIcon(), name)
         
         floor.table_obj.area_sum_changed.connect(self.connect_area_widgets((floor.area_total_n, floor.area_dwelling_n, floor.area_economical_n)))
         floor.table_obj.area_sum_changed.connect(self.sum_floors)
 
         return floor
+    
+    @Slot(int)
+    def _on_tab_bar_double_clicked(self, index: int):
+        if index < 0:
+            return  # Ensure a valid tab was clicked
+
+        editor = QLineEdit(self.ui.tabWidget_floors.tabBar())
+        editor.setText(self.ui.tabWidget_floors.tabText(index))
+        editor.setGeometry(self.ui.tabWidget_floors.tabBar().tabRect(index))
+        editor.setFrame(False) 
+        editor.setFocus()
+        editor.selectAll()
+        editor.show()
+
+        def finish_editing():
+            new_text = editor.text().strip()
+            
+            if new_text:
+                self.ui.tabWidget_floors.setTabText(index, new_text)
+                self.ui.tabWidget_floors.widget(index).setObjectName(new_text)
+            
+            editor.deleteLater()
+
+        editor.editingFinished.connect(finish_editing)
     
     def closeEvent(self, event: QCloseEvent) -> None:
         '''Trigger saving dialog before closing program'''
@@ -749,7 +781,7 @@ class Table(QObject):
 
 
 class Floor:
-    def __init__(self):
+    def __init__(self, name: str):
         self.setupUi()
         self.retranslateUi()
 
@@ -760,7 +792,7 @@ class Floor:
         self.button_remove_row_n.clicked.connect(self.table_obj.remove_current_row)
         self.checkBox_n.checkStateChanged.connect(self.table_obj.dw_change)
 
-        self.name = 'xxx'
+        self.tab_n.setObjectName(name)
 
     def setupUi(self):
         font1 = QFont()
