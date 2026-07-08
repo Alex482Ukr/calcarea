@@ -158,12 +158,18 @@ class MainWindow(QMainWindow):
         if self.current_file:
             with open(self.current_file, 'wt', encoding='utf-8') as f:
                 tables = [{"name": "MAIN", "table": self.table.get_matrix(), "dw_rows": self.save_dw(self.table)}]
+
+                self.sync_floor_list()
+
                 tables = tables + [{"name": floor.tab_n.objectName(), "table": floor.table_obj.get_matrix(), "dw_rows": self.save_dw(floor.table_obj)} for floor in self.floors]
                 dump(tuple(tables), f)
             return 'Success'
         else:
             return self.save_as_file()
     
+    def sync_floor_list(self):
+        self.floors = sorted(self.floors, key=lambda obj: self.ui.tabWidget_floors.indexOf(obj.tab_n))
+
     @staticmethod
     def save_dw(table: Table) -> tuple[int]:
         return tuple(table[item][0] for item in table.dw_rows)
