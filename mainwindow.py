@@ -425,6 +425,8 @@ class Table(QObject):
         self.dw_rows: list[int] = list()    # Indices of rows marked as "Dwelling area"
         self.hrows: tuple[tuple[Item]] = tuple()    # Highlighted rows
         self.comp_rows: list[Item] = list()
+
+        self.letter_default = 'A'
     
     def __getitem__(self, indx: int | Iterable[int] | Item) -> tuple[Item] | (str | Dec) | tuple[int, int]:
         '''Return row by given index
@@ -528,7 +530,7 @@ class Table(QObject):
         # to prevent huge amount of errors while filling row
         self.__table.blockSignals(True)
 
-        self.__table.setItem(row, 0, Item(str, 'A'))    # Filling "Letter" column
+        self.__table.setItem(row, 0, Item(str, self.letter_default))    # Filling "Letter" column
 
         for col in range(1, 4): # Filling "Width", "Length" and "Height" columns with rounding to hundredths
             self.__table.setItem(row, col, Item(Dec, rounding=2))
@@ -786,6 +788,7 @@ class Floor:
         self.retranslateUi()
 
         self.table_obj = Table(self.tableWidget_n, self.checkBox_n)
+        self.table_obj.letter_default = '0'
 
         self.button_add_row_n.clicked.connect(self.table_obj.add_row)
         self.button_insert_row_n.clicked.connect(self.table_obj.insert_after_current_row)
