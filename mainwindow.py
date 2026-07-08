@@ -12,9 +12,9 @@ from keyboard import add_hotkey
 from pyperclip import copy
 # from openpyxl import Workbook # not used
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidget, QTableWidgetItem, QFileDialog, QMessageBox, QWidget, QTextBrowser, QPushButton, QLabel, QCheckBox
+from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidget, QTableWidgetItem, QFileDialog, QMessageBox, QWidget, QTextBrowser, QPushButton, QLabel, QCheckBox, QHBoxLayout, QSizePolicy
 from PySide6.QtGui import QIcon, QColor, QBrush, QCloseEvent, QFont
-from PySide6.QtCore import Qt, Signal, Slot, QObject, QRect, QCoreApplication
+from PySide6.QtCore import Qt, Signal, Slot, QObject, QRect, QCoreApplication, QSize
 
 # Important:
 # You need to run the following command to generate the ui_form.py file
@@ -64,7 +64,7 @@ class MainWindow(QMainWindow):
         # List of floors: 
         # list(tuple(Table, checkBox, button_add_row, button_insert_row, button_remove_row, 
         #               label_S, label_Sdw, label_Sec, area_total, area_dwelling, area_economical), ...)
-        self.floors: list[tuple] = []
+        self.floors: list[Floor] = []
         self.ui.tabWidget_floors.removeTab(0)   # Removing first demo tab (Floor n)
 
         # "Open with" implementation
@@ -126,7 +126,7 @@ class MainWindow(QMainWindow):
 
                     for i in range(len(tables)):
                         self.add_floor()
-                        self.floors[i][0].load_json(tables[i])
+                        self.floors[i].table_obj.load_json(tables[i])
                 self.sum_floors((0, 0))
                 self.save_as_file()     # Resave with new format
             else:
@@ -144,7 +144,7 @@ class MainWindow(QMainWindow):
                 
                 for i in range(len(tables)):
                     self.add_floor()
-                    self.floors[i][0].load(tables[i])
+                    self.floors[i].table_obj.load(tables[i])
                 self.sum_floors((0, 0))
         
     @Slot()
@@ -154,7 +154,7 @@ class MainWindow(QMainWindow):
         if self.current_file:
             with open(self.current_file, 'wt', encoding='utf-8') as f:
                 tables = [{"name": "MAIN", "table": self.table.get_matrix(), "dw_rows": self.save_dw(self.table)}]
-                tables = tables + [{"name": "", "table": floor[0].get_matrix(), "dw_rows": self.save_dw(floor[0])} for floor in self.floors]
+                tables = tables + [{"name": "", "table": floor.table_obj.get_matrix(), "dw_rows": self.save_dw(floor.table_obj)} for floor in self.floors]
                 dump(tuple(tables), f)
             return 'Success'
         else:
@@ -228,7 +228,7 @@ class MainWindow(QMainWindow):
         sum_total, sum_dwelling, sum_economical = [Dec('0')]*3
 
         for floor in self.floors:
-            total_widget, dwelling_widget, economical_widget = floor[-3:]
+            total_widget, dwelling_widget, economical_widget = floor.area_total_n, floor.area_dwelling_n, floor.area_economical_n
             sum_total += Dec(total_widget.toPlainText())
             sum_dwelling += Dec(dwelling_widget.toPlainText())
             sum_economical += Dec(economical_widget.toPlainText())
@@ -262,167 +262,17 @@ class MainWindow(QMainWindow):
         if tab1 == 0:
             return self.table
         elif self.floors:
-            return self.floors[tab2][0]
+            return self.floors[tab2].table_obj
     
-    def create_floor(self, indx: int) -> tuple[QTableWidget, QCheckBox, QPushButton, QPushButton, QPushButton, 
-                                               QLabel, QLabel, QLabel, QTextBrowser, QTextBrowser, QTextBrowser]:
+    def create_floor(self, indx: int) -> Floor:
         '''Creates new floor'''
-        self.ui.tabWidget_floors.insertTab(indx, QWidget(), QIcon(), f'Поверх {indx+1}')
-        parent = self.ui.tabWidget_floors.widget(indx)
-        floor: list[QTableWidget, QCheckBox, QPushButton, QPushButton, QPushButton, 
-                    QLabel, QLabel, QLabel, QTextBrowser, QTextBrowser, QTextBrowser] = []
-
-        font = QFont()
-        font.setPointSize(12)
-        font_bold = QFont()
-        font_bold.setPointSize(12)
-        font_bold.setBold(True)
+        floor = Floor()
+        self.ui.tabWidget_floors.insertTab(indx, floor.tab_n, QIcon(), floor.name)
         
-        # checkBox
-        checkBox = QCheckBox(parent)
-        checkBox.setObjectName(f"checkBox_{indx}")
-        checkBox.setEnabled(False)
-        checkBox.setGeometry(QRect(480, 70, 84, 24))
-        checkBox.setCheckable(True)
-        checkBox.setChecked(False)
-        checkBox.setAutoRepeat(False)
-        checkBox.setAutoExclusive(False)
-        checkBox.setTristate(False)
-        floor.append(checkBox)
+        floor.table_obj.area_sum_changed.connect(self.connect_area_widgets((floor.area_total_n, floor.area_dwelling_n, floor.area_economical_n)))
+        floor.table_obj.area_sum_changed.connect(self.sum_floors)
 
-        # tableWidget
-        table = QTableWidget(parent)
-        table.setColumnCount(6)
-        for i in range(6):
-            table.setHorizontalHeaderItem(i, QTableWidgetItem())
-        table.setObjectName(f"tableWidget_{indx}")
-        table.setGeometry(QRect(0, 0, 461, 291))
-        table.horizontalHeader().setDefaultSectionSize(70)
-        table.show()
-        table_obj = Table(table, dw_checkbox=checkBox)
-
-        # button_add_row
-        button_add_row = QPushButton(parent)
-        button_add_row.setObjectName(f"button_add_row_{indx}")
-        button_add_row.setGeometry(QRect(480, 0, 201, 25))
-        floor.append(button_add_row)
-
-        # button_insert_row
-        button_insert_row = QPushButton(parent)
-        button_insert_row.setObjectName(f"button_insert_row_{indx}")
-        button_insert_row.setGeometry(QRect(480, 30, 101, 25))
-        floor.append(button_insert_row)
-
-        # button_remove_row
-        button_remove_row = QPushButton(parent)
-        button_remove_row.setObjectName(f"button_remove_row_{indx}")
-        button_remove_row.setGeometry(QRect(580, 30, 101, 25))
-        floor.append(button_remove_row)
-
-        # label_S
-        label_S = QLabel(parent)
-        label_S.setObjectName(f"label_S_{indx}")
-        label_S.setGeometry(QRect(480, 170, 101, 31))
-        label_S.setFont(font_bold)
-        label_S.setAlignment(Qt.AlignCenter)
-        floor.append(label_S)
-
-        # label_Sdw
-        label_Sdw = QLabel(parent)
-        label_Sdw.setObjectName(f"label_Sdw_{indx}")
-        label_Sdw.setGeometry(QRect(480, 110, 101, 31))
-        label_Sdw.setFont(font)
-        label_Sdw.setAlignment(Qt.AlignCenter)
-        floor.append(label_Sdw)
-
-        # label_Sec
-        label_Sec = QLabel(parent)
-        label_Sec.setObjectName(f"label_Sec_{indx}")
-        label_Sec.setGeometry(QRect(480, 140, 101, 31))
-        label_Sec.setFont(font)
-        label_Sec.setAlignment(Qt.AlignCenter)
-        floor.append(label_Sec)
-
-        # area_total
-        area_total = QTextBrowser(parent)
-        area_total.setObjectName(f"area_total_{indx}")
-        area_total.setGeometry(QRect(590, 170, 91, 31))
-        floor.append(area_total)
-
-        # area_dwelling
-        area_dwelling = QTextBrowser(parent)
-        area_dwelling.setObjectName(f"area_dwelling_{indx}")
-        area_dwelling.setGeometry(QRect(590, 110, 91, 31))
-        floor.append(area_dwelling)
-
-        # area_economical
-        area_economical = QTextBrowser(parent)
-        area_economical.setObjectName(f"area_economical_{indx}")
-        area_economical.setGeometry(QRect(590, 140, 91, 31))
-        floor.append(area_economical)
-
-
-        # retranslateUi
-        ___qtablewidgetitem = table.horizontalHeaderItem(0)
-        ___qtablewidgetitem.setText(QCoreApplication.translate("MainWindow", u"\u0411\u0443\u043a\u0432\u0430", None))
-        ___qtablewidgetitem1 = table.horizontalHeaderItem(1)
-        ___qtablewidgetitem1.setText(QCoreApplication.translate("MainWindow", u"\u0428\u0438\u0440\u0438\u043d\u0430", None))
-        ___qtablewidgetitem2 = table.horizontalHeaderItem(2)
-        ___qtablewidgetitem2.setText(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0432\u0436\u0438\u043d\u0430", None))
-        ___qtablewidgetitem3 = table.horizontalHeaderItem(3)
-        ___qtablewidgetitem3.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0441\u043e\u0442\u0430", None))
-        ___qtablewidgetitem4 = table.horizontalHeaderItem(4)
-        ___qtablewidgetitem4.setText(QCoreApplication.translate("MainWindow", u"\u041f\u043b\u043e\u0449\u0430", None))
-        ___qtablewidgetitem5 = table.horizontalHeaderItem(5)
-        ___qtablewidgetitem5.setText(QCoreApplication.translate("MainWindow", u"\u041e\u0431'\u0454\u043c", None))
-        checkBox.setText(QCoreApplication.translate("MainWindow", u"\u0416\u0438\u0442\u043b\u043e\u0432\u0430", None))
-
-        button_add_row.setText(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0434\u0430\u0442\u0438 \u0440\u044f\u0434\u043e\u043a", None))
-        button_insert_row.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0441\u0442\u0430\u0432\u0438\u0442\u0438 \u0440\u044f\u0434\u043e\u043a", None))
-        button_remove_row.setText(QCoreApplication.translate("MainWindow", u"Видалити рядки", None))
-
-        label_S.setText(QCoreApplication.translate("MainWindow", u"S\u0437\u0430\u0433\u0430\u043b\u044c\u043d\u0430", None))
-        label_Sdw.setText(QCoreApplication.translate("MainWindow", u"S\u0436\u0438\u0442\u043b\u043e\u0432\u0430", None))
-        label_Sec.setText(QCoreApplication.translate("MainWindow", u"S\u0433\u043e\u0441\u043f", None))
-
-        area_total.setHtml(QCoreApplication.translate("MainWindow", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"hr { height: 1px; border-width: 0; }\n"
-"li.unchecked::marker { content: \"\\2610\"; }\n"
-"li.checked::marker { content: \"\\2612\"; }\n"
-"</style></head><body style=\" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">0</p></body></html>", None))
-        area_dwelling.setHtml(QCoreApplication.translate("MainWindow", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"hr { height: 1px; border-width: 0; }\n"
-"li.unchecked::marker { content: \"\\2610\"; }\n"
-"li.checked::marker { content: \"\\2612\"; }\n"
-"</style></head><body style=\" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">0</p></body></html>", None))
-        area_economical.setHtml(QCoreApplication.translate("MainWindow", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"hr { height: 1px; border-width: 0; }\n"
-"li.unchecked::marker { content: \"\\2610\"; }\n"
-"li.checked::marker { content: \"\\2612\"; }\n"
-"</style></head><body style=\" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">0</p></body></html>", None))
-
-
-        table_obj.area_sum_changed.connect(self.connect_area_widgets((area_total, area_dwelling, area_economical)))
-        table_obj.area_sum_changed.connect(self.sum_floors)
-        button_add_row.clicked.connect(table_obj.add_row)
-        button_insert_row.clicked.connect(table_obj.insert_after_current_row)
-        button_remove_row.clicked.connect(table_obj.remove_current_row)
-        checkBox.checkStateChanged.connect(table_obj.dw_change)
-
-        for widget in floor:
-            widget.show()
-
-        floor.insert(0, table_obj)  # Table object always comes first
-        return tuple(floor)
+        return floor
     
     def closeEvent(self, event: QCloseEvent) -> None:
         '''Trigger saving dialog before closing program'''
@@ -898,6 +748,156 @@ class Table(QObject):
     #     wb.save(path)
 
 
+class Floor:
+    def __init__(self):
+        self.setupUi()
+        self.retranslateUi()
+
+        self.table_obj = Table(self.tableWidget_n, self.checkBox_n)
+
+        self.button_add_row_n.clicked.connect(self.table_obj.add_row)
+        self.button_insert_row_n.clicked.connect(self.table_obj.insert_after_current_row)
+        self.button_remove_row_n.clicked.connect(self.table_obj.remove_current_row)
+        self.checkBox_n.checkStateChanged.connect(self.table_obj.dw_change)
+
+        self.name = 'xxx'
+
+    def setupUi(self):
+        font1 = QFont()
+        font1.setPointSize(12)
+
+        font2 = QFont()
+        font2.setPointSize(12)
+        font2.setBold(True)
+
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+
+        self.tab_n = QWidget()
+        self.tab_n.setObjectName(u"tab_n")
+        self.horizontalLayout = QHBoxLayout(self.tab_n)
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.tableWidget_n = QTableWidget(self.tab_n)
+        if (self.tableWidget_n.columnCount() < 6):
+            self.tableWidget_n.setColumnCount(6)
+        __qtablewidgetitem6 = QTableWidgetItem()
+        self.tableWidget_n.setHorizontalHeaderItem(0, __qtablewidgetitem6)
+        __qtablewidgetitem7 = QTableWidgetItem()
+        self.tableWidget_n.setHorizontalHeaderItem(1, __qtablewidgetitem7)
+        __qtablewidgetitem8 = QTableWidgetItem()
+        self.tableWidget_n.setHorizontalHeaderItem(2, __qtablewidgetitem8)
+        __qtablewidgetitem9 = QTableWidgetItem()
+        self.tableWidget_n.setHorizontalHeaderItem(3, __qtablewidgetitem9)
+        font3 = QFont()
+        font3.setBold(True)
+        __qtablewidgetitem10 = QTableWidgetItem()
+        __qtablewidgetitem10.setFont(font3)
+        self.tableWidget_n.setHorizontalHeaderItem(4, __qtablewidgetitem10)
+        __qtablewidgetitem11 = QTableWidgetItem()
+        self.tableWidget_n.setHorizontalHeaderItem(5, __qtablewidgetitem11)
+        self.tableWidget_n.setObjectName(u"tableWidget_n")
+        self.tableWidget_n.horizontalHeader().setDefaultSectionSize(70)
+
+        self.horizontalLayout.addWidget(self.tableWidget_n)
+
+        self.container_n = QWidget(self.tab_n)
+        self.container_n.setObjectName(u"container_n")
+        sizePolicy1.setHeightForWidth(self.container_n.sizePolicy().hasHeightForWidth())
+        self.container_n.setSizePolicy(sizePolicy1)
+        self.container_n.setMinimumSize(QSize(201, 0))
+        self.area_dwelling_n = QTextBrowser(self.container_n)
+        self.area_dwelling_n.setObjectName(u"area_dwelling_n")
+        self.area_dwelling_n.setGeometry(QRect(110, 110, 91, 31))
+        self.area_total_n = QTextBrowser(self.container_n)
+        self.area_total_n.setObjectName(u"area_total_n")
+        self.area_total_n.setGeometry(QRect(110, 170, 91, 31))
+        self.button_add_row_n = QPushButton(self.container_n)
+        self.button_add_row_n.setObjectName(u"button_add_row_n")
+        self.button_add_row_n.setGeometry(QRect(0, 0, 201, 25))
+        self.label_Sdw_n = QLabel(self.container_n)
+        self.label_Sdw_n.setObjectName(u"label_Sdw_n")
+        self.label_Sdw_n.setGeometry(QRect(0, 110, 101, 31))
+        self.label_Sdw_n.setFont(font1)
+        self.label_Sdw_n.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.button_remove_row_n = QPushButton(self.container_n)
+        self.button_remove_row_n.setObjectName(u"button_remove_row_n")
+        self.button_remove_row_n.setGeometry(QRect(100, 30, 101, 25))
+        self.area_economical_n = QTextBrowser(self.container_n)
+        self.area_economical_n.setObjectName(u"area_economical_n")
+        self.area_economical_n.setGeometry(QRect(110, 140, 91, 31))
+        self.label_S_n = QLabel(self.container_n)
+        self.label_S_n.setObjectName(u"label_S_n")
+        self.label_S_n.setGeometry(QRect(0, 170, 101, 31))
+        self.label_S_n.setFont(font2)
+        self.label_S_n.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.label_Sec_n = QLabel(self.container_n)
+        self.label_Sec_n.setObjectName(u"label_Sec_n")
+        self.label_Sec_n.setGeometry(QRect(0, 140, 101, 31))
+        self.label_Sec_n.setFont(font1)
+        self.label_Sec_n.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.checkBox_n = QCheckBox(self.container_n)
+        self.checkBox_n.setObjectName(u"checkBox_n")
+        self.checkBox_n.setEnabled(False)
+        self.checkBox_n.setGeometry(QRect(0, 70, 84, 24))
+        self.checkBox_n.setCheckable(True)
+        self.checkBox_n.setChecked(False)
+        self.checkBox_n.setAutoRepeat(False)
+        self.checkBox_n.setAutoExclusive(False)
+        self.checkBox_n.setTristate(True)
+        self.button_insert_row_n = QPushButton(self.container_n)
+        self.button_insert_row_n.setObjectName(u"button_insert_row_n")
+        self.button_insert_row_n.setGeometry(QRect(0, 30, 101, 25))
+
+        self.horizontalLayout.addWidget(self.container_n)
+
+        self.tableWidget_n.show()
+        self.container_n.show()
+
+    def retranslateUi(self):
+        ___qtablewidgetitem6 = self.tableWidget_n.horizontalHeaderItem(0)
+        ___qtablewidgetitem6.setText(QCoreApplication.translate("MainWindow", u"\u041d\u043e\u043c\u0435\u0440", None))
+        ___qtablewidgetitem7 = self.tableWidget_n.horizontalHeaderItem(1)
+        ___qtablewidgetitem7.setText(QCoreApplication.translate("MainWindow", u"\u0428\u0438\u0440\u0438\u043d\u0430", None))
+        ___qtablewidgetitem8 = self.tableWidget_n.horizontalHeaderItem(2)
+        ___qtablewidgetitem8.setText(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0432\u0436\u0438\u043d\u0430", None))
+        ___qtablewidgetitem9 = self.tableWidget_n.horizontalHeaderItem(3)
+        ___qtablewidgetitem9.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0441\u043e\u0442\u0430", None))
+        ___qtablewidgetitem10 = self.tableWidget_n.horizontalHeaderItem(4)
+        ___qtablewidgetitem10.setText(QCoreApplication.translate("MainWindow", u"\u041f\u043b\u043e\u0449\u0430", None))
+        ___qtablewidgetitem11 = self.tableWidget_n.horizontalHeaderItem(5)
+        ___qtablewidgetitem11.setText(QCoreApplication.translate("MainWindow", u"\u041e\u0431'\u0454\u043c", None))
+        self.area_dwelling_n.setHtml(QCoreApplication.translate("MainWindow", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"hr { height: 1px; border-width: 0; }\n"
+"li.unchecked::marker { content: \"\\2610\"; }\n"
+"li.checked::marker { content: \"\\2612\"; }\n"
+"</style></head><body style=\" font-family:'Segoe UI'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:'Sans Serif';\">0</span></p></body></html>", None))
+        self.area_total_n.setHtml(QCoreApplication.translate("MainWindow", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"hr { height: 1px; border-width: 0; }\n"
+"li.unchecked::marker { content: \"\\2610\"; }\n"
+"li.checked::marker { content: \"\\2612\"; }\n"
+"</style></head><body style=\" font-family:'Segoe UI'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:'Sans Serif';\">0</span></p></body></html>", None))
+        self.button_add_row_n.setText(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0434\u0430\u0442\u0438 \u0440\u044f\u0434\u043e\u043a", None))
+        self.button_insert_row_n.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0441\u0442\u0430\u0432\u0438\u0442\u0438 \u0440\u044f\u0434\u043e\u043a", None))
+        self.label_Sdw_n.setText(QCoreApplication.translate("MainWindow", u"S\u0436\u0438\u0442\u043b\u043e\u0432\u0430", None))
+        self.button_remove_row_n.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0434\u0430\u043b\u0438\u0442\u0438 \u0440\u044f\u0434\u043a\u0438", None))
+        self.area_economical_n.setHtml(QCoreApplication.translate("MainWindow", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"hr { height: 1px; border-width: 0; }\n"
+"li.unchecked::marker { content: \"\\2610\"; }\n"
+"li.checked::marker { content: \"\\2612\"; }\n"
+"</style></head><body style=\" font-family:'Segoe UI'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:'Sans Serif';\">0</span></p></body></html>", None))
+        self.label_S_n.setText(QCoreApplication.translate("MainWindow", u"S\u0437\u0430\u0433\u0430\u043b\u044c\u043d\u0430", None))
+        self.label_Sec_n.setText(QCoreApplication.translate("MainWindow", u"S\u043f\u0456\u0434\u0441\u043e\u0431\u043d\u0430", None))
+        self.checkBox_n.setText(QCoreApplication.translate("MainWindow", u"\u0416\u0438\u0442\u043b\u043e\u0432\u0430", None))
 
 def excepthook(cls: type, exception: Exception, traceback):
     '''Catches errors and showing them in dialog box'''
