@@ -699,16 +699,19 @@ class Table(QObject):
 
     def composite_area(self) -> None:
         '''If row has first character '+' in "Letter" column it will add it's area value to previous row value'''
+        if self[0, 0].startswith(('+', '-')):
+            self[0, 0] = self[0, 0].lstrip('+-')    # Deleting '+' and '-' from "Letter" value if it has no rows above
+            self.count_area()
+            self.count_volume()
+            self.composite_area()
+            return
 
         # Starting iteration of table rows in reverse,
         # so it can sum area values by chain to the top row, that has no '+'
         for row in range(self.rows-1, -1, -1):
             if self[row, 0].startswith(('+', '-')):
-                if row == 0:
-                    self[row, 0] = self[row, 0].lstrip('+-')    # Deleting '+' and '-' from "Letter" value if it has no rows above
-                else:
-                    for col in (4, 5):
-                        self[row-1, col] = self[row-1][col].value + self[row][col].value
+                for col in (4, self.cols-1):
+                    self[row-1, col] = self[row-1][col].value + self[row][col].value
             self.highlight_composite()
 
     def highlight_composite(self) -> None:
