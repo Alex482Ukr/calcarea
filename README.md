@@ -14,6 +14,6 @@ A lightweight and easy-to-use application for calculating residential and non-re
 
 <hr>
 
-# Copyright © 2000 Oleksii Ukrainskyi <alex482ukr@gmail.com>
+# Copyright © 2026 Oleksii Ukrainskyi <alex482ukr@gmail.com>
 This work is free. You can redistribute it and/or modify it under the
 terms of MIT License. See the `LICENSE` file for more details.
