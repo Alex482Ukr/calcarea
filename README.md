@@ -1,6 +1,6 @@
 # TableCalc
 
-### EN 🇬🇧 / US 🇺🇸
+### EN 🇬🇧/🇺🇸
 
 A lightweight and easy-to-use application for calculating residential and non-residential area of ​​large land plots.
 
